@@ -1,8 +1,25 @@
-# 🎬 AI Script — 小说自动转剧本
+# AI Script — 小说自动转剧本
 
 将 3 章以上的小说文本自动转换为 **YAML 格式的结构化剧本**，利用 DeepSeek AI 进行智能改编，让作者快速获得可编辑、可打磨的剧本初稿。
 
-## 📦 项目结构
+## 使用方式
+
+| 方式 | 说明                                   | 状态 |
+|------|--------------------------------------|------|
+| **本地部署**（推荐） | 克隆仓库，配置自己的 DeepSeek API Key，本地启动即可使用 | 可用 |
+| **桌面客户端** | 前往右侧 [Releases] 下载 `.exe`，双击即可使用     | 可用 |
+| **直连地址** | 直接访问部署好的服务地址，无需配置                    | 暂时无法使用 |
+
+> **直连地址**：`http://你的服务器地址:8080`（服务正在部署中，敬请期待）
+
+## 代码位置
+
+| 代码 | 路径 |
+|------|------|
+| **前端** | [`src/main/resources/static/`](src/main/resources/static/) — HTML/CSS/JS 页面 |
+| **后端** | [`src/main/java/`](src/main/java/) — Spring Boot Controller / Service / Model |
+
+## 项目结构
 
 ```
 ├── src/main/java/              # Java 源码（Controller / Service / Model）
@@ -11,12 +28,10 @@
 │   ├── application-example.yaml # 配置模板 → 复制后填入自己的 Key
 │   └── static/index.html       # 前端页面（浏览器直接访问）
 ├── docs/script-yaml-schema.md  # YAML 剧本 Schema 设计文档
-├── ../electron/                # 桌面客户端（Electron）→ 打包为 .exe
-├── ../standalone/              # 独立前端 → 双击 HTML 即用，可连任意后端
 └── ../.github/workflows/       # GitHub Actions → 自动构建发布 Release
 ```
 
-## 🚀 快速开始
+## 快速开始
 
 ### 1. 配置 API Key
 
@@ -36,20 +51,17 @@ cp src/main/resources/application-example.yaml src/main/resources/application.ya
 
 访问 `http://localhost:8080`，粘贴小说正文即可转换。
 
-## 🖥 其他使用方式
+## 直连地址
 
-| 方式 | 说明 |
-|------|------|
-| 🌐 浏览器访问 | 直接打开 `http://部署服务器地址:8080` |
-| 📄 独立前端 | 下载 [`AIScript-standalone.zip`](../../releases)，解压双击 `index.html`，配后端地址 |
-| 🖥 桌面 EXE | 下载 [`AIScript-Setup.exe`](../../releases)，双击运行，配后端地址 |
-| 🔧 自建后端 | clone 本仓库，配置自己的 API Key，`./gradlew bootRun` |
+直连地址模式下，服务已部署在服务器上，用户**无需配置 API Key**，直接打开浏览器访问即可使用。
 
-## 📖 YAML 剧本 Schema
+> 该功能目前**暂时无法使用**，请先使用上方的本地部署方式。开放后会在这里更新地址。
+
+## YAML 剧本 Schema
 
 详见 [`docs/script-yaml-schema.md`](docs/script-yaml-schema.md)，包含完整 Schema 定义和设计决策说明。
 
-## 🛠 技术栈
+## 技术栈
 
 | 层 | 技术 |
 |----|------|
