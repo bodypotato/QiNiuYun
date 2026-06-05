@@ -2,6 +2,8 @@ package com.body.aiscript.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.time.Instant;
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.List;
 /**
  * 剧本元信息
  */
+@Data
+@Accessors(chain = true)
 @JsonPropertyOrder({
     "title", "original_title", "original_author", "script_version",
     "genre", "sub_genre", "tags", "language",
@@ -52,34 +56,4 @@ public class ScriptMeta {
     @JsonProperty("notes")
     private String notes;
 
-    public ScriptMeta() {}
-
-    // --- Builder-style setters ---
-
-    public ScriptMeta setTitle(String title) { this.title = title; return this; }
-    public ScriptMeta setOriginalTitle(String originalTitle) { this.originalTitle = originalTitle; return this; }
-    public ScriptMeta setOriginalAuthor(String originalAuthor) { this.originalAuthor = originalAuthor; return this; }
-    public ScriptMeta setScriptVersion(String scriptVersion) { this.scriptVersion = scriptVersion; return this; }
-    public ScriptMeta setGenre(String genre) { this.genre = genre; return this; }
-    public ScriptMeta setSubGenre(String subGenre) { this.subGenre = subGenre; return this; }
-    public ScriptMeta setTags(List<String> tags) { this.tags = tags; return this; }
-    public ScriptMeta setLanguage(String language) { this.language = language; return this; }
-    public ScriptMeta setSourceChapters(Integer sourceChapters) { this.sourceChapters = sourceChapters; return this; }
-    public ScriptMeta setWordCount(Integer wordCount) { this.wordCount = wordCount; return this; }
-    public ScriptMeta setCreatedAt(String createdAt) { this.createdAt = createdAt; return this; }
-    public ScriptMeta setNotes(String notes) { this.notes = notes; return this; }
-
-    // --- Getters ---
-    public String getTitle() { return title; }
-    public String getOriginalTitle() { return originalTitle; }
-    public String getOriginalAuthor() { return originalAuthor; }
-    public String getScriptVersion() { return scriptVersion; }
-    public String getGenre() { return genre; }
-    public String getSubGenre() { return subGenre; }
-    public List<String> getTags() { return tags; }
-    public String getLanguage() { return language; }
-    public Integer getSourceChapters() { return sourceChapters; }
-    public Integer getWordCount() { return wordCount; }
-    public String getCreatedAt() { return createdAt; }
-    public String getNotes() { return notes; }
 }

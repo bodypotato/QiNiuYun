@@ -2,12 +2,16 @@ package com.body.aiscript.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
 /**
  * 内容块——场景中的最小叙事单元
  */
+@Data
+@Accessors(chain = true)
 @JsonPropertyOrder({"type", "character", "character_name", "text", "emotion", "subtext", "camera", "duration_hint", "metadata"})
 public class ContentBlock {
 
@@ -52,26 +56,4 @@ public class ContentBlock {
         this.text = text;
     }
 
-    // --- Builder-style setters ---
-
-    public ContentBlock setType(BlockType type) { this.type = type; return this; }
-    public ContentBlock setCharacter(String character) { this.character = character; return this; }
-    public ContentBlock setCharacterName(String characterName) { this.characterName = characterName; return this; }
-    public ContentBlock setText(String text) { this.text = text; return this; }
-    public ContentBlock setEmotion(String emotion) { this.emotion = emotion; return this; }
-    public ContentBlock setSubtext(String subtext) { this.subtext = subtext; return this; }
-    public ContentBlock setCamera(String camera) { this.camera = camera; return this; }
-    public ContentBlock setDurationHint(String durationHint) { this.durationHint = durationHint; return this; }
-    public ContentBlock setMetadata(java.util.Map<String, Object> metadata) { this.metadata = metadata; return this; }
-
-    // --- Getters ---
-    public BlockType getType() { return type; }
-    public String getCharacter() { return character; }
-    public String getCharacterName() { return characterName; }
-    public String getText() { return text; }
-    public String getEmotion() { return emotion; }
-    public String getSubtext() { return subtext; }
-    public String getCamera() { return camera; }
-    public String getDurationHint() { return durationHint; }
-    public java.util.Map<String, Object> getMetadata() { return metadata; }
 }
