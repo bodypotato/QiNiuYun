@@ -3,8 +3,6 @@ package com.body.aiscript.controller;
 import com.body.aiscript.dto.ConversionResponse;
 import com.body.aiscript.dto.NovelInput;
 import com.body.aiscript.service.ScriptConversionService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 剧本转换 REST 控制器
@@ -81,6 +84,197 @@ public class ScriptController {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                     .body("# 转换失败\n# " + response.getMessage());
         }
+    }
+
+    /**
+     * 上传 TXT 文件，将小说转换为剧本
+     *
+     * POST /api/convert/file
+     * Content-Type: multipart/form-data
+     *
+     * 表单字段：
+     * - file:     小说 .txt 文件（必填）
+     * - title:    小说标题（选填，不填则自动从文件内容提取）
+     * - author:   小说作者（选填）
+     * - genre:    题材（选填）
+     * - styleNotes: 风格备注（选填）
+     */
+    @PostMapping(value = "/convert/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ConversionResponse> convertFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "author", required = false) String author,
+            @RequestParam(value = "genre", required = false) String genre,
+            @RequestParam(value = "styleNotes", required = false) String styleNotes) {
+
+        // 1. 校验文件
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(ConversionResponse.fail("文件为空，请上传有效的 .txt 文件"));
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        log.info("收到文件上传: name={}, size={}", originalFilename, file.getSize());
+
+        // 2. 读取文件内容
+        String content;
+        try {
+            content = new String(file.getBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log.error("读取文件失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ConversionResponse.fail("读取文件失败: " + e.getMessage()));
+        }
+
+        if (content.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(ConversionResponse.fail("文件内容为空"));
+        }
+
+        // 3. 自动提取元信息
+        if (title == null || title.isBlank()) {
+            title = extractTitle(content, originalFilename);
+        }
+        if (author == null || author.isBlank()) {
+            author = extractAuthor(content);
+        }
+        int chapters = countChapters(content);
+
+        log.info("自动识别: title={}, author={}, chapters={}", title, author, chapters);
+
+        // 4. 构建请求并转换
+        NovelInput input = new NovelInput();
+        input.setTitle(title);
+        input.setAuthor(author);
+        input.setContent(content);
+        input.setGenre(genre);
+        input.setChapters(chapters > 0 ? chapters : null);
+        input.setStyleNotes(styleNotes);
+
+        ConversionResponse response = conversionService.convert(input);
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
+        }
+    }
+
+    /**
+     * 上传 TXT 文件，直接返回 YAML
+     *
+     * POST /api/convert/file/yaml
+     * Content-Type: multipart/form-data
+     */
+    @PostMapping(value = "/convert/file/yaml",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = "application/x-yaml;charset=UTF-8")
+    public ResponseEntity<String> convertFileToYaml(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "author", required = false) String author,
+            @RequestParam(value = "genre", required = false) String genre,
+            @RequestParam(value = "styleNotes", required = false) String styleNotes) {
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("# 文件为空");
+        }
+
+        String content;
+        try {
+            content = new String(file.getBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("# 读取文件失败: " + e.getMessage());
+        }
+
+        if (title == null || title.isBlank()) {
+            title = extractTitle(content, file.getOriginalFilename());
+        }
+        if (author == null || author.isBlank()) {
+            author = extractAuthor(content);
+        }
+        int chapters = countChapters(content);
+
+        NovelInput input = new NovelInput();
+        input.setTitle(title);
+        input.setAuthor(author);
+        input.setContent(content);
+        input.setGenre(genre);
+        input.setChapters(chapters > 0 ? chapters : null);
+        input.setStyleNotes(styleNotes);
+
+        ConversionResponse response = conversionService.convert(input);
+
+        if (response.isSuccess() && response.getRawYaml() != null) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("application/x-yaml;charset=UTF-8"))
+                    .body(response.getRawYaml());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .body("# 转换失败\n# " + response.getMessage());
+        }
+    }
+
+    // ==================== TXT 元信息自动提取 ====================
+
+    /**
+     * 从文件内容中自动提取标题。
+     * 优先级：书名号中的文本 > 第一行非空内容 > 文件名（去扩展名）
+     */
+    private String extractTitle(String content, String filename) {
+        // 尝试匹配 《...》
+        Pattern p = Pattern.compile("《(.+?)》");
+        Matcher m = p.matcher(content);
+        if (m.find()) {
+            return m.group(1);
+        }
+        // 尝试匹配 "标题：XXX" 或 "书名：XXX"
+        p = Pattern.compile("(?:标题|书名)[：:]\s*(.+)");
+        m = p.matcher(content);
+        if (m.find()) {
+            return m.group(1).trim();
+        }
+        // 用第一行非空内容（限制长度）
+        String firstLine = content.lines()
+                .map(String::trim)
+                .filter(l -> !l.isEmpty())
+                .findFirst()
+                .orElse("");
+        if (firstLine.length() > 2 && firstLine.length() < 80) {
+            return firstLine;
+        }
+        // 回退到文件名
+        if (filename != null && filename.contains(".")) {
+            return filename.substring(0, filename.lastIndexOf('.'));
+        }
+        return filename != null ? filename : "未命名小说";
+    }
+
+    /**
+     * 尝试从文件内容中提取作者名
+     */
+    private String extractAuthor(String content) {
+        Pattern p = Pattern.compile("(?:作者|著)[：:]\s*(.+?)(?:\n|$)");
+        Matcher m = p.matcher(content);
+        if (m.find()) {
+            return m.group(1).trim();
+        }
+        return null;
+    }
+
+    /**
+     * 通过匹配 "第X章" 来统计章节数
+     */
+    private int countChapters(String content) {
+        Pattern p = Pattern.compile("第[零一二三四五六七八九十百千0-9]+章");
+        Matcher m = p.matcher(content);
+        int count = 0;
+        while (m.find()) {
+            count++;
+        }
+        return count;
     }
 
     /**
