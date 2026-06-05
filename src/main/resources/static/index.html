@@ -14,11 +14,30 @@
             --accent-hover: #628f7e;
             --border: #e6e0d3;
             --tag-bg: #f0ede3;
+            --input-bg: #fcfbf7;
             --danger: #c4877b;
             --shadow: 0 2px 12px rgba(60, 50, 30, 0.06);
+            --code-bg: #2c2923;
+            --code-text: #e8e3d3;
             --radius-sm: 10px;
             --radius: 16px;
             --radius-lg: 22px;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1b1a16;
+            --card: #262420;
+            --text: #e0dccf;
+            --sub: #9b9683;
+            --accent: #8bae9e;
+            --accent-hover: #7a9f8e;
+            --border: #3d3a32;
+            --tag-bg: #322f28;
+            --input-bg: #22201b;
+            --danger: #d49589;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+            --code-bg: #1e1c18;
+            --code-text: #d4cfbe;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -35,6 +54,7 @@
         .header {
             text-align: center;
             padding: 48px 24px 32px;
+            position: relative;
         }
         .header .icon {
             font-size: 44px;
@@ -45,6 +65,28 @@
             font-weight: 700;
             letter-spacing: -0.5px;
             color: var(--text);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 12px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(123, 158, 143, 0.12);
         }
         .header p {
             color: var(--sub);
@@ -125,7 +167,7 @@
             font-size: 14px;
             font-family: inherit;
             color: var(--text);
-            background: #fcfbf7;
+            background: var(--input-bg);
             outline: none;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
             resize: vertical;
@@ -154,7 +196,7 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            background: #fcfbf7;
+            background: var(--input-bg);
         }
         .upload-zone:hover,
         .upload-zone.dragover {
@@ -275,8 +317,8 @@
             color: var(--sub);
         }
         .yaml-output {
-            background: #2c2923;
-            color: #e8e3d3;
+            background: var(--code-bg);
+            color: var(--code-text);
             border-radius: var(--radius-sm);
             padding: 22px 24px;
             font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
@@ -326,6 +368,7 @@
 <body>
 
 <div class="header">
+    <button class="theme-toggle" id="themeToggle" title="切换深色/浅色模式">🌙</button>
     <div class="icon">🎬</div>
     <h1>AI Script</h1>
     <p>将小说自动转换为结构化 YAML 剧本，获得可编辑、可打磨的剧本初稿</p>
@@ -346,7 +389,7 @@
             <div class="form-row single">
                 <div class="field">
                     <label>小说正文</label>
-                    <textarea id="contentInput" placeholder="在此粘贴小说正文（3~6章，100~50000字）…&#10;&#10;示例：&#10;《剑雨江湖》&#10;作者：江湖客&#10;&#10;第一章 下山&#10;青云山巅，云雾缭绕。林风跪在师父面前……"></textarea>
+                    <textarea id="contentInput" placeholder="在此粘贴小说正文（3~6章，100~50000字）…"></textarea>
                     <span class="hint" id="wordCount">0 / 50000 字</span>
                 </div>
             </div>
@@ -642,6 +685,25 @@
 
     // ── Helpers ──
     function esc(s) { return s.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // ── Theme ──
+    const themeToggle = $('#themeToggle');
+    const THEME_KEY = 'app-theme';
+
+    function applyTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        themeToggle.textContent = t === 'dark' ? '☀️' : '🌙';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        const next = (document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark';
+        localStorage.setItem(THEME_KEY, next);
+        applyTheme(next);
+    });
+
+    (function loadTheme() {
+        applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+    })();
 
     // init
     checkReady();
