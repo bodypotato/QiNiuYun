@@ -2,12 +2,14 @@ package com.body.aiscript.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
 import java.util.List;
 
 /**
  * DeepSeek API 请求（OpenAI 兼容格式）
  */
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DeepSeekRequest {
 
@@ -27,20 +29,7 @@ public class DeepSeekRequest {
         this.maxTokens = maxTokens;
     }
 
-    public String getModel() { return model; }
-    public void setModel(String model) { this.model = model; }
 
-    public List<Message> getMessages() { return messages; }
-    public void setMessages(List<Message> messages) { this.messages = messages; }
-
-    public Double getTemperature() { return temperature; }
-    public void setTemperature(Double temperature) { this.temperature = temperature; }
-
-    public Integer getMaxTokens() { return maxTokens; }
-    public void setMaxTokens(Integer maxTokens) { this.maxTokens = maxTokens; }
-
-    public Boolean getStream() { return stream; }
-    public void setStream(Boolean stream) { this.stream = stream; }
 
     /**
      * 聊天消息

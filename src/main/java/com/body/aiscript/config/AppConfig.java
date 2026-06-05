@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -16,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
  * Spring 应用配置
  */
 @Configuration
+@Data
 public class AppConfig {
 
     @Value("${deepseek.api.url:https://api.deepseek.com}")
@@ -69,9 +72,4 @@ public class AppConfig {
                 .findAndRegisterModules();
     }
 
-    // --- Config value getters (供 Service 使用) ---
-
-    public String getDeepseekApiUrl() { return deepseekApiUrl; }
-    public String getDeepseekApiKey() { return deepseekApiKey; }
-    public String getDeepseekModel() { return deepseekModel; }
 }

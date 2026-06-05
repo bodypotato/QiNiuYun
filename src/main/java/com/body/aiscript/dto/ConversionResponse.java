@@ -2,10 +2,12 @@ package com.body.aiscript.dto;
 
 import com.body.aiscript.model.Script;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
 
 /**
  * 转换响应
  */
+@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConversionResponse {
 
@@ -35,30 +37,4 @@ public class ConversionResponse {
         r.message = message;
         return r;
     }
-
-    // --- Getters & Setters ---
-
-    public boolean isSuccess() { return success; }
-    public void setSuccess(boolean success) { this.success = success; }
-
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
-
-    public Script getScript() { return script; }
-    public void setScript(Script script) { this.script = script; }
-
-    public String getRawYaml() { return rawYaml; }
-    public void setRawYaml(String rawYaml) { this.rawYaml = rawYaml; }
-
-    public int getInputWordCount() { return inputWordCount; }
-    public void setInputWordCount(int inputWordCount) { this.inputWordCount = inputWordCount; }
-
-    public int getOutputSceneCount() { return outputSceneCount; }
-    public void setOutputSceneCount(int outputSceneCount) { this.outputSceneCount = outputSceneCount; }
-
-    public String getModelUsed() { return modelUsed; }
-    public void setModelUsed(String modelUsed) { this.modelUsed = modelUsed; }
-
-    public long getProcessingTimeMs() { return processingTimeMs; }
-    public void setProcessingTimeMs(long processingTimeMs) { this.processingTimeMs = processingTimeMs; }
 }
