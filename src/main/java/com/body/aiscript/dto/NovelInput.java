@@ -12,8 +12,7 @@ import lombok.Data;
 @Data
 public class NovelInput {
 
-    @NotBlank(message = "小说标题不能为空")
-    private String title;
+    private String title;  // 可选，后端会自动从正文中提取
 
     private String author;
 

@@ -3,7 +3,7 @@ package com.body.aiscript.controller;
 import com.body.aiscript.dto.ConversionResponse;
 import com.body.aiscript.dto.NovelInput;
 import com.body.aiscript.service.ScriptConversionService;
-import jakarta.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -56,7 +56,30 @@ public class ScriptController {
      * }
      */
     @PostMapping("/convert")
-    public ResponseEntity<ConversionResponse> convertNovel(@Valid @RequestBody NovelInput input) {
+    public ResponseEntity<ConversionResponse> convertNovel(@RequestBody NovelInput input) {
+        // 自动提取标题（与文件上传端点保持一致）
+        if (input.getTitle() == null || input.getTitle().isBlank()) {
+            input.setTitle(extractTitle(input.getContent(), null));
+        }
+        if (input.getAuthor() == null || input.getAuthor().isBlank()) {
+            input.setAuthor(extractAuthor(input.getContent()));
+        }
+
+        // 手动校验必填字段
+        if (input.getContent() == null || input.getContent().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(ConversionResponse.fail("小说正文不能为空"));
+        }
+        if (input.getContent().length() < 100) {
+            return ResponseEntity.badRequest()
+                    .body(ConversionResponse.fail("小说正文需在100~50000字之间"));
+        }
+        if (input.getContent().length() > MAX_WORD_COUNT) {
+            return ResponseEntity.badRequest()
+                    .body(ConversionResponse.fail(String.format("字数超限：当前 %d 字，最多允许 %d 字",
+                            input.getContent().length(), MAX_WORD_COUNT)));
+        }
+
         log.info("收到转换请求: title={}, contentLength={}, chapters={}",
                 input.getTitle(), input.getContent().length(), input.getChapters());
 
@@ -76,7 +99,30 @@ public class ScriptController {
      * Accept: application/x-yaml
      */
     @PostMapping(value = "/convert/yaml", produces = "application/x-yaml;charset=UTF-8")
-    public ResponseEntity<String> convertNovelToYaml(@Valid @RequestBody NovelInput input) {
+    public ResponseEntity<String> convertNovelToYaml(@RequestBody NovelInput input) {
+        // 自动提取标题（与文件上传端点保持一致）
+        if (input.getTitle() == null || input.getTitle().isBlank()) {
+            input.setTitle(extractTitle(input.getContent(), null));
+        }
+        if (input.getAuthor() == null || input.getAuthor().isBlank()) {
+            input.setAuthor(extractAuthor(input.getContent()));
+        }
+
+        // 手动校验必填字段
+        if (input.getContent() == null || input.getContent().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body("# 小说正文不能为空");
+        }
+        if (input.getContent().length() < 100) {
+            return ResponseEntity.badRequest()
+                    .body("# 小说正文需在100~50000字之间");
+        }
+        if (input.getContent().length() > MAX_WORD_COUNT) {
+            return ResponseEntity.badRequest()
+                    .body(String.format("# 字数超限：当前 %d 字，最多允许 %d 字",
+                            input.getContent().length(), MAX_WORD_COUNT));
+        }
+
         log.info("收到 YAML 转换请求: title={}", input.getTitle());
 
         ConversionResponse response = conversionService.convert(input);
