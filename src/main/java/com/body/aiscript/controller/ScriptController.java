@@ -28,6 +28,11 @@ public class ScriptController {
 
     private static final Logger log = LoggerFactory.getLogger(ScriptController.class);
 
+    /** 单次转换最大字数 */
+    private static final int MAX_WORD_COUNT = 50_000;
+    /** 最大章节数 */
+    private static final int MAX_CHAPTERS = 6;
+
     private final ScriptConversionService conversionService;
 
     public ScriptController(ScriptConversionService conversionService) {
@@ -131,6 +136,12 @@ public class ScriptController {
                     .body(ConversionResponse.fail("文件内容为空"));
         }
 
+        // 2.5 校验字数 & 章节数
+        String limitError = validateLimits(content);
+        if (limitError != null) {
+            return ResponseEntity.badRequest().body(ConversionResponse.fail(limitError));
+        }
+
         // 3. 自动提取元信息
         if (title == null || title.isBlank()) {
             title = extractTitle(content, originalFilename);
@@ -187,6 +198,12 @@ public class ScriptController {
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("# 读取文件失败: " + e.getMessage());
+        }
+
+        // 校验字数 & 章节数
+        String limitError = validateLimits(content);
+        if (limitError != null) {
+            return ResponseEntity.badRequest().body("# " + limitError);
         }
 
         if (title == null || title.isBlank()) {
@@ -260,6 +277,25 @@ public class ScriptController {
         Matcher m = p.matcher(content);
         if (m.find()) {
             return m.group(1).trim();
+        }
+        return null;
+    }
+
+    /**
+     * 校验字数上限和章节数上限。返回 null 表示通过，否则返回错误消息。
+     */
+    private String validateLimits(String content) {
+        int wordCount = content.length();
+        if (wordCount > MAX_WORD_COUNT) {
+            return String.format("字数超限：当前 %d 字，最多允许 %d 字（约 %.1f 万字）",
+                    wordCount, MAX_WORD_COUNT, MAX_WORD_COUNT / 10000.0);
+        }
+        if (wordCount < 100) {
+            return String.format("字数不足：当前仅 %d 字，至少需要 100 字（建议3章以上）", wordCount);
+        }
+        int chapters = countChapters(content);
+        if (chapters > MAX_CHAPTERS) {
+            return String.format("章节数超限：检测到 %d 章，最多允许 %d 章", chapters, MAX_CHAPTERS);
         }
         return null;
     }

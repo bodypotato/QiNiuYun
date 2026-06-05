@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Script · 小说转剧本</title>
+    <style>
+        :root {
+            --bg: #f7f4ef;
+            --card: #ffffff;
+            --text: #3d3929;
+            --sub: #8b8576;
+            --accent: #7b9e8f;
+            --accent-hover: #628f7e;
+            --border: #e6e0d3;
+            --tag-bg: #f0ede3;
+            --danger: #c4877b;
+            --shadow: 0 2px 12px rgba(60, 50, 30, 0.06);
+            --radius-sm: 10px;
+            --radius: 16px;
+            --radius-lg: 22px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ─── Header ─── */
+        .header {
+            text-align: center;
+            padding: 48px 24px 32px;
+        }
+        .header .icon {
+            font-size: 44px;
+            margin-bottom: 8px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+        .header p {
+            color: var(--sub);
+            font-size: 15px;
+            margin-top: 6px;
+        }
+
+        /* ─── Layout ─── */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ─── Card ─── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 30px;
+            box-shadow: var(--shadow);
+        }
+
+        /* ─── Mode Tabs ─── */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            background: var(--tag-bg);
+            border-radius: var(--radius-lg);
+            padding: 5px;
+            margin-bottom: 24px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            border-radius: calc(var(--radius-lg) - 4px);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--sub);
+            border: none;
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+        .tab.active {
+            background: var(--card);
+            color: var(--text);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        /* ─── Form ─── */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .form-row.single { grid-template-columns: 1fr; }
+
+        .field { display: flex; flex-direction: column; gap: 5px; }
+        .field label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--sub);
+            letter-spacing: 0.3px;
+        }
+        .field input,
+        .field textarea,
+        .field select {
+            width: 100%;
+            padding: 11px 15px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: #fcfbf7;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            resize: vertical;
+        }
+        .field input:focus,
+        .field textarea:focus,
+        .field select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(123, 158, 143, 0.12);
+        }
+        .field textarea {
+            min-height: 280px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        .field .hint {
+            font-size: 11px;
+            color: var(--sub);
+        }
+
+        /* ─── Upload Zone ─── */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 52px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fcfbf7;
+        }
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(123, 158, 143, 0.04);
+        }
+        .upload-zone .upload-icon {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+        .upload-zone .upload-text {
+            font-size: 15px;
+            color: var(--text);
+            font-weight: 500;
+        }
+        .upload-zone .upload-hint {
+            font-size: 12px;
+            color: var(--sub);
+            margin-top: 4px;
+        }
+        .upload-zone input[type="file"] { display: none; }
+        .file-name {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: var(--tag-bg);
+            border-radius: var(--radius-lg);
+            font-size: 13px;
+            margin-top: 12px;
+        }
+        .file-name .remove {
+            cursor: pointer;
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        /* ─── Buttons ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 12px 28px;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .btn-primary {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            padding: 14px;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-ghost {
+            background: var(--tag-bg);
+            color: var(--text);
+            font-size: 13px;
+            padding: 8px 18px;
+        }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-sm {
+            font-size: 13px;
+            padding: 7px 16px;
+            border-radius: var(--radius-sm);
+        }
+
+        /* ─── Spinner ─── */
+        .spinner {
+            display: inline-block;
+            width: 18px; height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── Result ─── */
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .result-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .result-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .result-meta {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .result-meta .tag {
+            font-size: 12px;
+            padding: 5px 12px;
+            background: var(--tag-bg);
+            border-radius: var(--radius-lg);
+            color: var(--sub);
+        }
+        .yaml-output {
+            background: #2c2923;
+            color: #e8e3d3;
+            border-radius: var(--radius-sm);
+            padding: 22px 24px;
+            font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 560px;
+            overflow-y: auto;
+        }
+        .yaml-output::-webkit-scrollbar { width: 6px; }
+        .yaml-output::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+        }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 24px;
+            background: var(--text);
+            color: #fff;
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .toast.show { opacity: 1; }
+
+        /* ─── Hidden ─── */
+        .hidden { display: none !important; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+            .header { padding: 32px 16px 20px; }
+            .header h1 { font-size: 24px; }
+            .card { padding: 20px 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="icon">🎬</div>
+    <h1>AI Script</h1>
+    <p>将小说自动转换为结构化 YAML 剧本，获得可编辑、可打磨的剧本初稿</p>
+</div>
+
+<div class="container">
+
+    <!-- ── Input Card ── -->
+    <div class="card" id="inputCard">
+        <!-- Mode Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-mode="text">📝 粘贴文本</button>
+            <button class="tab" data-mode="file">📂 上传 TXT</button>
+        </div>
+
+        <!-- Text Mode -->
+        <div id="textMode">
+            <div class="form-row single">
+                <div class="field">
+                    <label>小说正文</label>
+                    <textarea id="contentInput" placeholder="在此粘贴小说正文（3~6章，100~50000字）…&#10;&#10;示例：&#10;《剑雨江湖》&#10;作者：江湖客&#10;&#10;第一章 下山&#10;青云山巅，云雾缭绕。林风跪在师父面前……"></textarea>
+                    <span class="hint" id="wordCount">0 / 50000 字</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Mode -->
+        <div id="fileMode" class="hidden">
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">点击选择 .txt 文件 或拖拽到此处</div>
+                <div class="upload-hint">支持 UTF-8 编码，最多 50000 字 / 6 章</div>
+                <input type="file" id="fileInput" accept=".txt,text/plain">
+            </div>
+            <div id="fileInfo" class="hidden" style="text-align:center;">
+                <span class="file-name">
+                    📎 <span id="fileName"></span>
+                    <span class="remove" id="removeFile">×</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="form-row" style="margin-top:16px;">
+            <div class="field">
+                <label>标题（选填）</label>
+                <input type="text" id="titleInput" placeholder="自动识别或手动输入">
+            </div>
+            <div class="field">
+                <label>作者（选填）</label>
+                <input type="text" id="authorInput" placeholder="自动识别或手动输入">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="field">
+                <label>题材（选填）</label>
+                <select id="genreInput">
+                    <option value="">自动 / 不指定</option>
+                    <option value="武侠">武侠</option>
+                    <option value="都市">都市</option>
+                    <option value="科幻">科幻</option>
+                    <option value="悬疑">悬疑</option>
+                    <option value="言情">言情</option>
+                    <option value="历史">历史</option>
+                    <option value="奇幻">奇幻</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>风格备注（选填）</label>
+                <input type="text" id="styleInput" placeholder="如：参考王家卫电影风格">
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="convertBtn">
+            ✨ 开始转换
+        </button>
+    </div>
+
+    <!-- ── Result Card ── -->
+    <div class="card hidden" id="resultCard">
+        <div class="result-header">
+            <h2>📜 剧本输出</h2>
+            <div class="result-actions">
+                <button class="btn btn-ghost btn-sm" id="copyBtn">📋 复制</button>
+                <button class="btn btn-ghost btn-sm" id="downloadBtn">⬇ 下载 .yaml</button>
+                <button class="btn btn-ghost btn-sm" id="backBtn">🔄 重新转换</button>
+            </div>
+        </div>
+        <div class="result-meta" id="resultMeta"></div>
+        <div class="yaml-output" id="yamlOutput"></div>
+    </div>
+
+    <!-- ── Error Card ── -->
+    <div class="card hidden" id="errorCard" style="border-color: var(--danger);">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">⚠️</span>
+            <span style="font-weight:600;" id="errorMsg"></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:12px;" id="retryBtn">🔄 返回重试</button>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // ── State ──
+    const state = { mode: 'text', file: null };
+
+    // ── DOM refs ──
+    const $ = s => document.querySelector(s);
+    const tabs = document.querySelectorAll('.tab');
+    const textMode = $('#textMode');
+    const fileMode = $('#fileMode');
+    const uploadZone = $('#uploadZone');
+    const fileInput = $('#fileInput');
+    const fileInfo = $('#fileInfo');
+    const fileName = $('#fileName');
+    const removeFile = $('#removeFile');
+    const contentInput = $('#contentInput');
+    const wordCount = $('#wordCount');
+    const titleInput = $('#titleInput');
+    const authorInput = $('#authorInput');
+    const genreInput = $('#genreInput');
+    const styleInput = $('#styleInput');
+    const convertBtn = $('#convertBtn');
+    const inputCard = $('#inputCard');
+    const resultCard = $('#resultCard');
+    const errorCard = $('#errorCard');
+    const errorMsg = $('#errorMsg');
+    const resultMeta = $('#resultMeta');
+    const yamlOutput = $('#yamlOutput');
+    const copyBtn = $('#copyBtn');
+    const downloadBtn = $('#downloadBtn');
+    const backBtn = $('#backBtn');
+    const retryBtn = $('#retryBtn');
+    const toast = $('#toast');
+
+    // ── Tab switching ──
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            state.mode = tab.dataset.mode;
+            textMode.classList.toggle('hidden', state.mode !== 'text');
+            fileMode.classList.toggle('hidden', state.mode !== 'file');
+            checkReady();
+        });
+    });
+
+    // ── File Upload ──
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) handleFile(fileInput.files[0]);
+    });
+    removeFile.addEventListener('click', () => {
+        state.file = null;
+        fileInput.value = '';
+        fileInfo.classList.add('hidden');
+        uploadZone.classList.remove('hidden');
+        checkReady();
+    });
+
+    function handleFile(f) {
+        if (!f) return;
+        if (!f.name.endsWith('.txt') && f.type !== 'text/plain') {
+            showToast('⚠️ 请选择 .txt 文件');
+            return;
+        }
+        state.file = f;
+        fileName.textContent = f.name + ` (${formatSize(f.size)})`;
+        uploadZone.classList.add('hidden');
+        fileInfo.classList.remove('hidden');
+        checkReady();
+    }
+
+    function formatSize(bytes) {
+        return bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    // ── Word count ──
+    contentInput.addEventListener('input', () => {
+        const len = contentInput.value.length;
+        wordCount.textContent = `${len} / 50000 字`;
+        wordCount.style.color = len > 50000 ? 'var(--danger)' : 'var(--sub)';
+        checkReady();
+    });
+
+    // ── Ready check ──
+    function checkReady() {
+        let ready = false;
+        if (state.mode === 'text') {
+            const len = contentInput.value.trim().length;
+            ready = len >= 100 && len <= 50000;
+        } else {
+            ready = !!state.file;
+        }
+        convertBtn.disabled = !ready;
+    }
+
+    // ── Convert ──
+    convertBtn.addEventListener('click', async () => {
+        convertBtn.disabled = true;
+        convertBtn.innerHTML = '<span class="spinner"></span> AI 正在分析小说并生成剧本…';
+        hideResult();
+
+        try {
+            let response;
+            if (state.mode === 'text') {
+                const body = {
+                    title: titleInput.value.trim() || undefined,
+                    author: authorInput.value.trim() || undefined,
+                    content: contentInput.value,
+                    genre: genreInput.value || undefined,
+                    styleNotes: styleInput.value.trim() || undefined
+                };
+                response = await fetch('/api/convert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+            } else {
+                const form = new FormData();
+                form.append('file', state.file);
+                if (titleInput.value.trim()) form.append('title', titleInput.value.trim());
+                if (authorInput.value.trim()) form.append('author', authorInput.value.trim());
+                if (genreInput.value) form.append('genre', genreInput.value);
+                if (styleInput.value.trim()) form.append('styleNotes', styleInput.value.trim());
+                response = await fetch('/api/convert/file', { method: 'POST', body: form });
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                showResult(data);
+            } else {
+                showError(data.message || '转换失败，请重试');
+            }
+        } catch (e) {
+            showError('网络请求失败：' + e.message);
+        }
+
+        convertBtn.disabled = false;
+        convertBtn.innerHTML = '✨ 开始转换';
+        checkReady();
+    });
+
+    // ── Result ──
+    function showResult(data) {
+        inputCard.classList.add('hidden');
+        errorCard.classList.add('hidden');
+        resultCard.classList.remove('hidden');
+
+        // meta tags
+        let metaHtml = '';
+        if (data.script?.meta?.title) metaHtml += `<span class="tag">📖 ${esc(data.script.meta.title)}</span>`;
+        if (data.outputSceneCount) metaHtml += `<span class="tag">🎭 ${data.outputSceneCount} 场</span>`;
+        if (data.inputWordCount) metaHtml += `<span class="tag">📝 ${data.inputWordCount} 字</span>`;
+        if (data.processingTimeMs) metaHtml += `<span class="tag">⏱ ${(data.processingTimeMs / 1000).toFixed(1)}s</span>`;
+        resultMeta.innerHTML = metaHtml;
+
+        // yaml
+        yamlOutput.textContent = data.rawYaml || '(空)';
+
+        // scroll
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function showError(msg) {
+        inputCard.classList.add('hidden');
+        resultCard.classList.add('hidden');
+        errorCard.classList.remove('hidden');
+        errorMsg.textContent = msg;
+        errorCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function hideResult() {
+        resultCard.classList.add('hidden');
+        errorCard.classList.add('hidden');
+        inputCard.classList.remove('hidden');
+    }
+
+    // ── Actions ──
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(yamlOutput.textContent).then(() => showToast('✅ 已复制到剪贴板'));
+    });
+    downloadBtn.addEventListener('click', () => {
+        const blob = new Blob([yamlOutput.textContent], { type: 'application/x-yaml;charset=UTF-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (titleInput.value.trim() || 'script') + '.yaml';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+    backBtn.addEventListener('click', () => { hideResult(); });
+    retryBtn.addEventListener('click', () => { hideResult(); });
+
+    // ── Toast ──
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    // ── Helpers ──
+    function esc(s) { return s.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // init
+    checkReady();
+</script>
+</body>
+</html>
