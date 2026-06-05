@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: AIScript
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+
+# ==================== DeepSeek API 配置 ====================
+deepseek:
+  api:
+    url: https://api.deepseek.com
+    key: sk-866225853edd44bfb9c66bb949f280b7
+    model: deepseek-chat
+    connect-timeout-ms: 30000
+    read-timeout-ms: 180000   # 3分钟——长文本转换需要更长时间
+
+# ==================== 日志 ====================
+logging:
+  level:
+    com.body.aiscript: DEBUG
+    org.springframework.web: INFO
