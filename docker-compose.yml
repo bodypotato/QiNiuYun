@@ -1,0 +1,8 @@
+services:
+  aiscript:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # 在此填入你的 DeepSeek API Key
+      - DEEPSEEK_API_KEY=你的API密钥
