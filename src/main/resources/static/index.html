@@ -79,6 +79,35 @@
             transition: all 0.2s ease; line-height: 1;
         }
         .theme-toggle:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(123, 158, 143, 0.12); }
+        .server-toggle {
+            position: absolute; top: 12px; right: 76px;
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 1.5px solid var(--border); background: var(--card);
+            font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; line-height: 1;
+        }
+        .server-toggle:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(123, 158, 143, 0.12); }
+        .server-popover {
+            position: absolute; top: 56px; right: 24px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 18px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12); z-index: 100;
+            min-width: 300px; display: none;
+        }
+        .server-popover.show { display: block; }
+        .server-popover label { font-size: 12px; font-weight: 600; color: var(--sub); display: block; margin-bottom: 6px; }
+        .server-popover input {
+            width: 100%; padding: 9px 12px; border: 1.5px solid var(--border);
+            border-radius: 8px; font-size: 13px; font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+            color: var(--text); background: var(--input-bg); outline: none;
+        }
+        .server-popover input:focus { border-color: var(--accent); }
+        .server-popover .hint { font-size: 11px; color: var(--sub); margin-top: 4px; }
+        .server-status { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; }
+        .server-status .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .server-status .dot.ok { background: #6b9e7a; }
+        .server-status .dot.err { background: var(--danger); }
 
         /* ─── Layout ─── */
         .container {
@@ -498,6 +527,16 @@
 
 <div class="header">
     <button class="theme-toggle" id="themeToggle" title="切换深色/浅色模式">🌙</button>
+    <button class="server-toggle" id="serverToggle" title="后端服务器设置">⚙️</button>
+    <div class="server-popover" id="serverPopover">
+        <label>后端服务地址</label>
+        <input type="text" id="serverUrlInput" placeholder="http://localhost:8080">
+        <div class="hint">所有 API 请求将发往此地址</div>
+        <div class="server-status" id="serverStatus">
+            <span class="dot" id="serverStatusDot"></span>
+            <span id="serverStatusText"></span>
+        </div>
+    </div>
     <div class="icon">🎬</div>
     <h1>AI Script</h1>
     <p>将小说自动转换为结构化 YAML 剧本，在线编辑打磨</p>
@@ -804,7 +843,7 @@ convertBtn.addEventListener('click', async () => {
                 genre: genreInput.value || undefined,
                 styleNotes: styleInput.value.trim() || undefined
             };
-            response = await fetch('/api/convert', {
+            response = await fetch(getApiBase() + '/api/convert', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
@@ -815,7 +854,7 @@ convertBtn.addEventListener('click', async () => {
             if (authorInput.value.trim()) form.append('author', authorInput.value.trim());
             if (genreInput.value) form.append('genre', genreInput.value);
             if (styleInput.value.trim()) form.append('styleNotes', styleInput.value.trim());
-            response = await fetch('/api/convert/file', { method: 'POST', body: form });
+            response = await fetch(getApiBase() + '/api/convert/file', { method: 'POST', body: form });
         }
 
         const data = await response.json();
@@ -1632,7 +1671,7 @@ yamlApplyBtn.addEventListener('click', async () => {
 editorDownloadBtn.addEventListener('click', async () => {
     if (!state.script) return;
     try {
-        const response = await fetch('/api/script/serialize', {
+        const response = await fetch(getApiBase() + '/api/script/serialize', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(state.script)
@@ -1754,7 +1793,7 @@ async function executeRewrite() {
     rewriteResult.classList.add('hidden');
 
     try {
-        const response = await fetch('/api/rewrite', {
+        const response = await fetch(getApiBase() + '/api/rewrite', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1833,6 +1872,89 @@ function esc(s) {
     if (!s) return '';
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ════════════════ Server Config ════════════════
+const SERVER_URL_KEY = 'aiscript-server-url';
+
+function getApiBase() {
+    const url = localStorage.getItem(SERVER_URL_KEY);
+    if (url && url.trim()) {
+        return url.trim().replace(/\/+$/, ''); // 去掉尾部斜杠
+    }
+    return ''; // 空字符串 = 使用相对路径（同源）
+}
+
+function setApiBase(url) {
+    if (url && url.trim()) {
+        localStorage.setItem(SERVER_URL_KEY, url.trim().replace(/\/+$/, ''));
+    } else {
+        localStorage.removeItem(SERVER_URL_KEY);
+    }
+}
+
+async function checkServerHealth(url) {
+    try {
+        const response = await fetch(url + '/api/health', { method: 'GET', signal: AbortSignal.timeout(3000) });
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
+// 显示服务器连接状态
+async function updateServerStatus() {
+    const dot = $('#serverStatusDot');
+    const text = $('#serverStatusText');
+    const base = getApiBase();
+    if (!base) {
+        dot.className = 'dot ok';
+        text.textContent = '使用当前页面地址（同源）';
+        return;
+    }
+    dot.className = 'dot';
+    text.textContent = '检测中…';
+    const ok = await checkServerHealth(base);
+    if (ok) {
+        dot.className = 'dot ok';
+        text.textContent = '已连接';
+    } else {
+        dot.className = 'dot err';
+        text.textContent = '无法连接';
+    }
+}
+
+// Server popover toggle
+const serverToggle = $('#serverToggle');
+const serverPopover = $('#serverPopover');
+const serverUrlInput = $('#serverUrlInput');
+const serverStatusDot = $('#serverStatusDot');
+const serverStatusText = $('#serverStatusText');
+
+serverToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    serverPopover.classList.toggle('show');
+    if (serverPopover.classList.contains('show')) {
+        serverUrlInput.value = getApiBase();
+        updateServerStatus();
+        serverUrlInput.focus();
+    }
+});
+
+document.addEventListener('click', (e) => {
+    if (!serverPopover.contains(e.target) && e.target !== serverToggle) {
+        serverPopover.classList.remove('show');
+    }
+});
+
+serverUrlInput.addEventListener('input', () => {
+    const val = serverUrlInput.value.trim();
+    setApiBase(val);
+    updateServerStatus();
+});
+
+// 页面加载时初始化
+serverUrlInput.value = getApiBase();
+updateServerStatus();
 
 // ════════════════ Theme ════════════════
 const themeToggle = $('#themeToggle');
