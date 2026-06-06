@@ -732,10 +732,26 @@
     const AUTOSAVE_DEBOUNCE_MS = 2000;
 
     let saveTimer = null;
-    let scriptData = null; // 内存中的当前剧本，与 yamlOutput 保持同步
+    let scriptData = null;       // 当前剧本对象
+    let lastSavedHash = '';      // 上次保存时的数据指纹，避免重复写入
 
-    // 防抖保存：用户停止操作 2 秒后写入 localStorage
+    // 计算 script 对象的简单指纹
+    function scriptHash(script) {
+        if (!script) return '';
+        // 只对关键字段取指纹，忽略不影响内容的时间戳等
+        return JSON.stringify({
+            meta: script.meta,
+            characters: script.characters,
+            structure: script.structure
+        }).length.toString(36);
+    }
+
     function scheduleSave() {
+        if (!scriptData) return;
+        // dirty check：数据没变就不写入
+        const hash = scriptHash(scriptData);
+        if (hash === lastSavedHash) return;
+
         const indicator = $('#saveIndicator');
         const label = $('#saveLabel');
         if (indicator) {
@@ -744,20 +760,21 @@
         }
         clearTimeout(saveTimer);
         saveTimer = setTimeout(() => {
-            doSave();
+            doSave(hash);
         }, AUTOSAVE_DEBOUNCE_MS);
     }
 
-    function doSave() {
+    function doSave(hash) {
         if (!scriptData) return;
+        // 只存 script JSON，不存 rawYaml（同一份数据，省一半空间）
         const draft = {
             script: scriptData,
-            rawYaml: yamlOutput ? yamlOutput.textContent : '',
-            title: titleInput.value.trim(),
+            title: scriptData.meta?.title || titleInput.value.trim(),
             savedAt: new Date().toISOString()
         };
         try {
             localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(draft));
+            lastSavedHash = hash || scriptHash(scriptData);
             const indicator = $('#saveIndicator');
             const label = $('#saveLabel');
             if (indicator) {
@@ -765,7 +782,6 @@
                 label.textContent = '已自动保存 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             }
         } catch (e) {
-            // localStorage 满了
             showToast('⚠️ 自动保存失败：存储空间不足');
         }
     }
@@ -773,6 +789,7 @@
     function clearDraft() {
         localStorage.removeItem(AUTOSAVE_KEY);
         scriptData = null;
+        lastSavedHash = '';
     }
 
     function getDraft() {
@@ -785,7 +802,7 @@
         }
     }
 
-    // 页面加载时检查是否有未完成的草稿
+    // 检查草稿
     function checkDraft() {
         const draft = getDraft();
         if (!draft || !draft.script) return;
@@ -795,7 +812,8 @@
             month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit'
         });
-        $('#draftTime').textContent = '保存时间：' + timeStr + '  |  标题：' + (draft.title || '未命名');
+        const title = draft.title || draft.script?.meta?.title || '未命名';
+        $('#draftTime').textContent = '保存时间：' + timeStr + '  |  标题：' + title;
         $('#draftBanner').classList.remove('hidden');
     }
 
@@ -804,18 +822,21 @@
         const draft = getDraft();
         if (!draft) return;
         scriptData = draft.script;
-        yamlOutput.textContent = draft.rawYaml || '';
         if (draft.title) titleInput.value = draft.title;
 
-        // 构造一个兼容 showResult 的数据结构
+        // 用 script 对象构造 YAML 显示（不存冗余的 rawYaml）
+        const yamlText = buildYamlFromScript(draft.script);
+        yamlOutput.textContent = yamlText;
+
         const data = {
             success: true,
             script: draft.script,
-            rawYaml: draft.rawYaml,
+            rawYaml: yamlText,
             outputSceneCount: countScenesFromScript(draft.script),
             inputWordCount: draft.script?.meta?.wordCount || 0
         };
         showResult(data);
+        lastSavedHash = scriptHash(draft.script);
         $('#draftBanner').classList.add('hidden');
         showToast('📂 已恢复上次编辑的剧本');
     });
@@ -828,7 +849,6 @@
         }
     });
 
-    // 统计场次的辅助函数（不依赖 Script 类）
     function countScenesFromScript(script) {
         let count = 0;
         const acts = script?.structure?.acts;
@@ -840,7 +860,48 @@
         return count;
     }
 
-    // 修改 showResult：保存数据到内存并触发自动保存
+    // 从 Script JSON 生成 YAML 文本（用于恢复时显示，避免存储 rawYaml 冗余）
+    function buildYamlFromScript(script) {
+        if (!script) return '# (空)';
+        const lines = [];
+        pushObj(script, lines, 0);
+        return lines.join('\n');
+
+        function pushObj(obj, lines, indent) {
+            if (!obj || typeof obj !== 'object') return;
+            const pad = '  '.repeat(indent);
+            const keys = Object.keys(obj);
+            for (const key of keys) {
+                const val = obj[key];
+                if (val === null || val === undefined) continue;
+                const yk = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+                if (Array.isArray(val)) {
+                    lines.push(pad + yk + ':');
+                    for (const item of val) {
+                        if (typeof item === 'object' && item !== null) {
+                            lines.push(pad + '  -');
+                            pushObj(item, lines, indent + 2);
+                        } else {
+                            lines.push(pad + '  - ' + formatScalar(item));
+                        }
+                    }
+                } else if (typeof val === 'object') {
+                    lines.push(pad + yk + ':');
+                    pushObj(val, lines, indent + 1);
+                } else {
+                    lines.push(pad + yk + ': ' + formatScalar(val));
+                }
+            }
+        }
+        function formatScalar(v) {
+            if (typeof v === 'string') {
+                return v.includes('\n') ? '|\n' + v.split('\n').map(l => '    ' + l).join('\n') : ('"' + v.replace(/\\/g,'\\\\').replace(/"/g,'\\"') + '"');
+            }
+            return String(v);
+        }
+    }
+
+    // 包装 showResult：保存数据并触发自动保存
     const originalShowResult = showResult;
     showResult = function(data) {
         originalShowResult(data);
@@ -850,23 +911,6 @@
         }
     };
 
-    // 监听 yamlOutput 的手动编辑（用户改了文本），触发保存
-    if (typeof MutationObserver !== 'undefined') {
-        const yamlObserver = new MutationObserver(() => {
-            if (scriptData) scheduleSave();
-        });
-        // 等 DOM 就绪后观察
-        document.addEventListener('DOMContentLoaded', () => {
-            if (yamlOutput) {
-                yamlObserver.observe(yamlOutput, { childList: true, characterData: true, subtree: true });
-            }
-        });
-    }
-    // 也监听 input 事件（如果用户直接编辑 yamlOutput 的 textContent）
-    yamlOutput.addEventListener('input', () => {
-        if (scriptData) scheduleSave();
-    });
-
     // 新建转换时清除草稿
     const originalHideResult = hideResult;
     hideResult = function() {
@@ -874,7 +918,7 @@
         originalHideResult();
     };
 
-    // init
+    // 页面加载时检查草稿
     checkDraft();
 
     // ── Theme ──
