@@ -1140,6 +1140,7 @@ function renderMetaPanel() {
             </div>
         </div>
     `;
+    scheduleSave();
 }
 
 function ensureMetaDefaults(m) {
@@ -1154,6 +1155,7 @@ function updateMeta(field, value) {
     if (!state.script.meta) state.script.meta = {};
     state.script.meta[field] = value;
     if (field === 'title') editorTitle.value = value || '';
+    scheduleSave();
 }
 
 function addMetaTag() {
@@ -1184,6 +1186,7 @@ function renderCharactersPanel() {
         </div>
         <button class="add-char-btn" onclick="addCharacter()">＋ 添加角色</button>
     `;
+    scheduleSave();
 
     // restore expanded state
     state.expandedChars.forEach(i => {
@@ -1372,6 +1375,7 @@ function renderStructurePanel() {
         ${acts.map((act, ai) => renderActSection(act, ai)).join('')}
         <button class="add-act-btn" onclick="addAct()">＋ 添加一幕</button>
     `;
+    scheduleSave();
 }
 
 function renderActSection(act, actIndex) {
@@ -2150,16 +2154,7 @@ editorBackBtn.addEventListener('click', () => {
     inputCard.classList.remove('hidden');
 });
 
-// 在所有编辑操作后触发自动保存
-const editorObserver = new MutationObserver(() => {
-    if (state.script) scheduleSave();
-});
-document.addEventListener('DOMContentLoaded', () => {
-    const editorCard = $('#editorCard');
-    if (editorCard) {
-        editorObserver.observe(editorCard, { childList: true, subtree: true, characterData: true });
-    }
-});
+// 编辑操作后触发自动保存（在各 render 函数末尾调用，避免 MutationObserver 性能问题）
 
 // 页面加载时检查草稿
 checkDraft();
