@@ -2,6 +2,8 @@ package com.body.aiscript.service;
 
 import com.body.aiscript.dto.ConversionResponse;
 import com.body.aiscript.dto.NovelInput;
+import com.body.aiscript.dto.RewriteRequest;
+import com.body.aiscript.dto.RewriteResponse;
 import com.body.aiscript.model.*;
 import com.body.aiscript.model.Script.RevisionEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -336,6 +338,108 @@ public class ScriptConversionService {
                     )
             ));
         }
+    }
+
+    // ==================== AI 改写 ====================
+
+    /**
+     * 对剧本中的单个内容块进行 AI 辅助改写
+     */
+    public RewriteResponse rewrite(RewriteRequest req) {
+        try {
+            String systemPrompt = buildRewriteSystemPrompt();
+            String userMessage = buildRewriteUserMessage(req);
+
+            String aiResponse = deepSeekService.chat(
+                    systemPrompt, userMessage,
+                    0.8,    // 创造性略高，方便改写
+                    2000    // 改写单段文本，不需要太多 token
+            );
+
+            // AI 返回的格式：第一行是改写后的文本，后面可能有建议
+            String rewrittenText = aiResponse;
+            String suggestion = null;
+
+            // 尝试分离改写文本和建议
+            int suggestionIdx = aiResponse.indexOf("【改写说明】");
+            if (suggestionIdx > 0) {
+                rewrittenText = aiResponse.substring(0, suggestionIdx).trim();
+                suggestion = aiResponse.substring(suggestionIdx + 6).trim();
+            }
+
+            return RewriteResponse.ok(rewrittenText, suggestion, 0);
+
+        } catch (Exception e) {
+            log.error("AI 改写失败", e);
+            return RewriteResponse.fail("改写失败: " + e.getMessage());
+        }
+    }
+
+    private String buildRewriteSystemPrompt() {
+        return """
+            你是一位资深的剧本医生（Script Doctor），擅长根据指令精修剧本内容。
+
+            你的任务是改写用户提供的剧本片段。请严格遵循以下规则：
+
+            ## 规则
+            1. **只输出改写后的文本**，不要输出任何解释、客套话或 YAML 格式
+            2. 保持原有的**内容块类型**（动作/对话/转场/备注）不变
+            3. 保持**语言风格一致**——如果原文是古风，改写也要古风；原文是现代口语，改写也要口语化
+            4. 遵循用户的改写指令，但**不要过度修改**——只改用户关心的部分
+            5. 如果指令要求改风格（如"改成王家卫风格"），在保留原意的前提下调整措辞和节奏
+            6. 输出长度应和原文大致相当，除非用户要求缩短或扩写
+
+            ## 输出格式
+            直接输出改写后的文本。可以在文末另起一行添加【改写说明】简要说明做了什么修改（1-2句话，可选）。
+            """;
+    }
+
+    private String buildRewriteUserMessage(RewriteRequest req) {
+        StringBuilder sb = new StringBuilder();
+
+        // 场景上下文
+        sb.append("【场景上下文】\n");
+        if (req.getSceneTitle() != null && !req.getSceneTitle().isBlank()) {
+            sb.append("当前场：").append(req.getSceneTitle()).append("\n");
+        }
+        if (req.getSceneLocation() != null && !req.getSceneLocation().isBlank()) {
+            sb.append("地点：").append(req.getSceneLocation()).append("\n");
+        }
+        if (req.getSceneTime() != null && !req.getSceneTime().isBlank()) {
+            sb.append("时间：").append(req.getSceneTime()).append("\n");
+        }
+        if (req.getSceneMood() != null && !req.getSceneMood().isBlank()) {
+            sb.append("氛围：").append(req.getSceneMood()).append("\n");
+        }
+
+        // 角色上下文（仅对话）
+        if ("dialogue".equals(req.getBlockType()) && req.getCharacterName() != null) {
+            sb.append("\n【角色信息】\n");
+            sb.append("说话人：").append(req.getCharacterName()).append("\n");
+            if (req.getCharacterPersonality() != null && !req.getCharacterPersonality().isBlank()) {
+                sb.append("性格：").append(req.getCharacterPersonality()).append("\n");
+            }
+        }
+
+        // 周边文本
+        if (req.getSurroundingText() != null && !req.getSurroundingText().isBlank()) {
+            sb.append("\n【前后文（供参考风格，不要改写）】\n");
+            sb.append(req.getSurroundingText()).append("\n");
+        }
+
+        // 原文
+        sb.append("\n【待改写的原文】（类型：").append(req.getBlockType()).append("）\n");
+        sb.append(req.getOriginalText()).append("\n");
+
+        // 改写指令
+        sb.append("\n【改写指令】\n");
+        sb.append(req.getInstruction());
+
+        if (req.getStyle() != null && !req.getStyle().isBlank()) {
+            sb.append("\n\n风格参考：").append(req.getStyle());
+        }
+
+        return sb.toString();
     }
 
     /**
