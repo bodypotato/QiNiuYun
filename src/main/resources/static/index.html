@@ -727,6 +727,18 @@
     // ── Helpers ──
     function esc(s) { return s.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+    // ════════════════ Storage Check ════════════════
+    let storageAvailable = false;
+    try {
+        const testKey = '_aiscript_test';
+        localStorage.setItem(testKey, '1');
+        localStorage.removeItem(testKey);
+        storageAvailable = true;
+    } catch (e) {
+        // localStorage 不可用（无痕模式、file:// 协议或存储已满）
+        console.warn('localStorage 不可用，自动保存功能将无法使用');
+    }
+
     // ════════════════ Auto-save ════════════════
     const AUTOSAVE_KEY = 'aiscript-draft';
     const AUTOSAVE_DEBOUNCE_MS = 2000;
@@ -747,7 +759,7 @@
     }
 
     function scheduleSave() {
-        if (!scriptData) return;
+        if (!storageAvailable || !scriptData) return;
         // dirty check：数据没变就不写入
         const hash = scriptHash(scriptData);
         if (hash === lastSavedHash) return;
@@ -787,12 +799,13 @@
     }
 
     function clearDraft() {
-        localStorage.removeItem(AUTOSAVE_KEY);
+        if (storageAvailable) localStorage.removeItem(AUTOSAVE_KEY);
         scriptData = null;
         lastSavedHash = '';
     }
 
     function getDraft() {
+        if (!storageAvailable) return null;
         try {
             const raw = localStorage.getItem(AUTOSAVE_KEY);
             if (!raw) return null;
@@ -804,6 +817,7 @@
 
     // 检查草稿
     function checkDraft() {
+        if (!storageAvailable) return;
         const draft = getDraft();
         if (!draft || !draft.script) return;
 
@@ -907,7 +921,11 @@
         originalShowResult(data);
         if (data.script) {
             scriptData = data.script;
-            scheduleSave();
+            if (storageAvailable) {
+                scheduleSave();
+            } else {
+                showToast('⚠️ 浏览器存储不可用，剧本刷新后将丢失');
+            }
         }
     };
 
