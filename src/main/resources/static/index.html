@@ -402,6 +402,77 @@
             border-radius: var(--radius-lg); color: var(--sub);
         }
 
+        /* ─── Rewrite Modal ─── */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 24px;
+        }
+        .modal {
+            background: var(--card); border-radius: var(--radius);
+            max-width: 700px; width: 100%; max-height: 85vh;
+            display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 24px; border-bottom: 1px solid var(--border);
+        }
+        .modal-header h3 { font-size: 17px; font-weight: 700; }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+            background: var(--card); cursor: pointer; font-size: 18px; display: flex;
+            align-items: center; justify-content: center; transition: all 0.15s;
+        }
+        .modal-close:hover { border-color: var(--danger); color: var(--danger); }
+        .modal-body {
+            padding: 20px 24px; overflow-y: auto; flex: 1;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .modal-section {}
+        .modal-section label { font-size: 13px; font-weight: 600; color: var(--sub); display: block; margin-bottom: 6px; }
+        .modal-original {
+            background: var(--tag-bg); border-radius: 8px; padding: 14px;
+            font-size: 13px; line-height: 1.7; color: var(--text);
+            max-height: 160px; overflow-y: auto; white-space: pre-wrap;
+        }
+        .modal-original .type-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            padding: 2px 6px; border-radius: 4px; margin-right: 6px;
+            color: var(--accent); background: rgba(123,158,143,0.15);
+        }
+        .modal-instruction-input {
+            width: 100%; padding: 12px; border: 1.5px solid var(--border);
+            border-radius: 8px; font-size: 14px; font-family: inherit;
+            color: var(--text); background: var(--input-bg); outline: none;
+        }
+        .modal-instruction-input:focus { border-color: var(--accent); }
+        .modal-quick-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .modal-quick-actions button {
+            font-size: 12px; padding: 5px 12px; border: 1px solid var(--border);
+            border-radius: 16px; cursor: pointer; background: var(--card);
+            color: var(--text); transition: all 0.15s; font-family: inherit;
+        }
+        .modal-quick-actions button:hover { border-color: var(--accent); background: var(--tag-bg); }
+        .modal-rewritten {
+            background: rgba(123,158,143,0.06); border: 1px solid var(--accent);
+            border-radius: 8px; padding: 14px; font-size: 13px;
+            line-height: 1.7; color: var(--text); white-space: pre-wrap;
+            max-height: 200px; overflow-y: auto;
+        }
+        .modal-rewrite-btn {
+            width: 100%; padding: 12px; background: var(--accent); color: #fff;
+            border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+            cursor: pointer; font-family: inherit; transition: background 0.2s;
+        }
+        .modal-rewrite-btn:hover { background: var(--accent-hover); }
+        .modal-rewrite-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .modal-result-actions { display: flex; gap: 8px; }
+        .modal-result-actions button { flex: 1; }
+        .modal-suggestion {
+            font-size: 12px; color: var(--sub); padding: 8px 12px;
+            background: var(--tag-bg); border-radius: 6px; border-left: 3px solid var(--accent);
+        }
+
         /* ─── Hidden ─── */
         .hidden { display: none !important; }
 
@@ -554,6 +625,51 @@
         </div>
     </div>
 
+</div>
+
+<!-- ── Rewrite Modal ── -->
+<div class="modal-overlay hidden" id="rewriteModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>✨ AI 改写</h3>
+            <button class="modal-close" onclick="closeRewriteModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-section">
+                <label>原文</label>
+                <div class="modal-original" id="rewriteOriginal"></div>
+            </div>
+            <div class="modal-section">
+                <label>改写指令</label>
+                <input type="text" class="modal-instruction-input" id="rewriteInstruction"
+                    placeholder="例如：更简洁、更悲伤、改成古龙风格、加一个比喻…"
+                    onkeydown="if(event.key==='Enter')executeRewrite()">
+                <div class="modal-quick-actions" style="margin-top:8px;">
+                    <button onclick="quickRewrite('更简洁有力')">🎯 更简洁</button>
+                    <button onclick="quickRewrite('更有画面感')">🎥 更有画面感</button>
+                    <button onclick="quickRewrite('更富有情感')">💗 更富情感</button>
+                    <button onclick="quickRewrite('加入悬念感')">🔮 加入悬念</button>
+                    <button onclick="quickRewrite('更符合角色性格')">🎭 更贴性格</button>
+                    <button onclick="quickRewrite('更口语化自然')">💬 更口语化</button>
+                </div>
+            </div>
+            <button class="modal-rewrite-btn" id="rewriteExecuteBtn" onclick="executeRewrite()">
+                ✨ 开始改写
+            </button>
+            <div class="hidden" id="rewriteResult">
+                <div class="modal-section">
+                    <label>改写结果</label>
+                    <div class="modal-rewritten" id="rewriteOutput"></div>
+                </div>
+                <div class="modal-suggestion hidden" id="rewriteSuggestion"></div>
+                <div class="modal-result-actions" style="margin-top:12px;">
+                    <button class="btn btn-primary" onclick="acceptRewrite()">✅ 采用</button>
+                    <button class="btn btn-ghost" onclick="retryRewrite()">🔄 换个写法</button>
+                    <button class="btn btn-ghost" onclick="closeRewriteModal()">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1274,6 +1390,7 @@ function renderContentBlock(cb, actIndex, sceneIndex, blockIndex) {
                 <span class="cb-type-badge">${typeName}</span>
                 ${charName ? `<span class="cb-char">${esc(charName)}</span>` : ''}
                 <div class="cb-actions">
+                    <button class="btn-icon" onclick="event.stopPropagation();openRewriteModal(${actIndex},${sceneIndex},${blockIndex})" title="AI 改写" style="color:var(--accent);">✨</button>
                     ${blockIndex > 0 ? `<button class="btn-icon" onclick="moveContentBlock(${actIndex},${sceneIndex},${blockIndex},'up')" title="上移">↑</button>` : ''}
                     <button class="btn-icon" onclick="moveContentBlock(${actIndex},${sceneIndex},${blockIndex},'down')" title="下移">↓</button>
                     <button class="btn-icon danger" onclick="deleteContentBlock(${actIndex},${sceneIndex},${blockIndex})" title="删除">×</button>
@@ -1546,6 +1663,161 @@ editorDownloadBtn.addEventListener('click', async () => {
             showToast('❌ 下载失败: ' + e2.message);
         }
     }
+});
+
+// ════════════════ AI Rewrite ════════════════
+const rewriteModal = $('#rewriteModal');
+const rewriteOriginal = $('#rewriteOriginal');
+const rewriteInstruction = $('#rewriteInstruction');
+const rewriteExecuteBtn = $('#rewriteExecuteBtn');
+const rewriteResult = $('#rewriteResult');
+const rewriteOutput = $('#rewriteOutput');
+const rewriteSuggestion = $('#rewriteSuggestion');
+
+state.rewriteContext = null; // { actIndex, sceneIndex, blockIndex, originalText, ... }
+
+function openRewriteModal(actIndex, sceneIndex, blockIndex) {
+    const scene = state.script.structure.acts[actIndex].scenes[sceneIndex];
+    const block = scene.content[blockIndex];
+
+    // 获取角色信息（如果是对话）
+    let charName = block.characterName || '';
+    let charPersonality = '';
+    if (block.character) {
+        const ch = (state.script.characters || []).find(c => c.id === block.character);
+        if (ch) {
+            charName = charName || ch.name;
+            charPersonality = (ch.personality || []).join('，');
+        }
+    }
+
+    // 获取前后文（相邻内容块）
+    const surrounding = scene.content
+        .filter((_, i) => Math.abs(i - blockIndex) <= 2 && i !== blockIndex)
+        .map(b => {
+            const prefix = b.type === 'dialogue' && b.characterName ? `[${b.characterName}]: ` : '';
+            return prefix + (b.text || '');
+        })
+        .join('\n');
+
+    state.rewriteContext = {
+        actIndex, sceneIndex, blockIndex,
+        originalText: block.text || '',
+        blockType: block.type || 'action',
+        sceneTitle: scene.sceneTitle || '',
+        sceneLocation: scene.location || '',
+        sceneTime: scene.time || '',
+        sceneMood: scene.mood || '',
+        characterName: charName,
+        characterPersonality: charPersonality,
+        surroundingText: surrounding
+    };
+
+    // 渲染原文
+    const typeLabels = { action: '动作', dialogue: '对话', transition: '转场', note: '备注' };
+    rewriteOriginal.innerHTML = `<span class="type-label">${typeLabels[block.type] || block.type}</span>${esc(block.text || '(空)')}`;
+
+    // 重置状态
+    rewriteInstruction.value = '';
+    rewriteResult.classList.add('hidden');
+    rewriteExecuteBtn.classList.remove('hidden');
+    rewriteExecuteBtn.disabled = false;
+    rewriteExecuteBtn.innerHTML = '✨ 开始改写';
+
+    rewriteModal.classList.remove('hidden');
+    rewriteInstruction.focus();
+}
+
+function closeRewriteModal() {
+    rewriteModal.classList.add('hidden');
+    state.rewriteContext = null;
+}
+
+function quickRewrite(instruction) {
+    rewriteInstruction.value = instruction;
+    executeRewrite();
+}
+
+async function executeRewrite() {
+    const ctx = state.rewriteContext;
+    if (!ctx) return;
+
+    const instruction = rewriteInstruction.value.trim();
+    if (!instruction) {
+        rewriteInstruction.focus();
+        return;
+    }
+
+    // 显示加载
+    rewriteExecuteBtn.disabled = true;
+    rewriteExecuteBtn.innerHTML = '<span class="spinner" style="border-color:rgba(255,255,255,0.3);border-top-color:#fff;"></span> AI 正在改写…';
+    rewriteResult.classList.add('hidden');
+
+    try {
+        const response = await fetch('/api/rewrite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                originalText: ctx.originalText,
+                blockType: ctx.blockType,
+                instruction: instruction,
+                sceneTitle: ctx.sceneTitle,
+                sceneLocation: ctx.sceneLocation,
+                sceneTime: ctx.sceneTime,
+                sceneMood: ctx.sceneMood,
+                characterName: ctx.characterName,
+                characterPersonality: ctx.characterPersonality,
+                surroundingText: ctx.surroundingText
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            rewriteOutput.textContent = data.rewrittenText;
+            if (data.suggestion) {
+                rewriteSuggestion.textContent = '💡 ' + data.suggestion;
+                rewriteSuggestion.classList.remove('hidden');
+            } else {
+                rewriteSuggestion.classList.add('hidden');
+            }
+            rewriteResult.classList.remove('hidden');
+            rewriteExecuteBtn.classList.add('hidden');
+        } else {
+            showToast('❌ ' + (data.message || '改写失败'));
+            rewriteExecuteBtn.disabled = false;
+            rewriteExecuteBtn.innerHTML = '✨ 开始改写';
+        }
+    } catch (e) {
+        showToast('❌ 网络请求失败: ' + e.message);
+        rewriteExecuteBtn.disabled = false;
+        rewriteExecuteBtn.innerHTML = '✨ 开始改写';
+    }
+}
+
+function acceptRewrite() {
+    const ctx = state.rewriteContext;
+    if (!ctx) return;
+
+    const newText = rewriteOutput.textContent;
+    if (newText) {
+        state.script.structure.acts[ctx.actIndex].scenes[ctx.sceneIndex].content[ctx.blockIndex].text = newText;
+        renderStructurePanel();
+        showToast('✅ 已应用改写');
+    }
+    closeRewriteModal();
+}
+
+function retryRewrite() {
+    rewriteResult.classList.add('hidden');
+    rewriteExecuteBtn.classList.remove('hidden');
+    rewriteExecuteBtn.disabled = false;
+    rewriteExecuteBtn.innerHTML = '✨ 开始改写';
+}
+
+// 点击 modal 遮罩关闭
+rewriteModal.addEventListener('click', function(e) {
+    if (e.target === rewriteModal) closeRewriteModal();
 });
 
 // ════════════════ Toast ════════════════

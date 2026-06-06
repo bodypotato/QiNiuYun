@@ -2,6 +2,8 @@ package com.body.aiscript.controller;
 
 import com.body.aiscript.dto.ConversionResponse;
 import com.body.aiscript.dto.NovelInput;
+import com.body.aiscript.dto.RewriteRequest;
+import com.body.aiscript.dto.RewriteResponse;
 import com.body.aiscript.model.Script;
 import com.body.aiscript.service.ScriptConversionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -380,6 +382,33 @@ public class ScriptController {
             log.error("YAML 序列化失败", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("# 序列化失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * AI 辅助改写剧本片段
+     *
+     * POST /api/rewrite
+     */
+    @PostMapping("/rewrite")
+    public ResponseEntity<RewriteResponse> rewrite(@RequestBody RewriteRequest request) {
+        if (request.getOriginalText() == null || request.getOriginalText().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(RewriteResponse.fail("原文不能为空"));
+        }
+        if (request.getInstruction() == null || request.getInstruction().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(RewriteResponse.fail("改写指令不能为空"));
+        }
+
+        log.info("收到改写请求: type={}, instruction={}", request.getBlockType(), request.getInstruction());
+
+        RewriteResponse response = conversionService.rewrite(request);
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
         }
     }
 
