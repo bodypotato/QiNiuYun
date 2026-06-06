@@ -502,6 +502,31 @@
             background: var(--tag-bg); border-radius: 6px; border-left: 3px solid var(--accent);
         }
 
+        /* ─── Auto-save indicator ─── */
+        .save-indicator {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; color: var(--sub); transition: color 0.3s ease;
+        }
+        .save-indicator .save-dot {
+            width: 7px; height: 7px; border-radius: 50%; background: var(--sub);
+            transition: background 0.3s ease;
+        }
+        .save-indicator.saved { color: #6b9e7a; }
+        .save-indicator.saved .save-dot { background: #6b9e7a; }
+        .save-indicator.saving { color: var(--accent); }
+        .save-indicator.saving .save-dot { background: var(--accent); animation: pulse 0.8s ease infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        .draft-banner {
+            background: rgba(123,158,143,0.08); border: 1px solid var(--accent);
+            border-radius: var(--radius-sm); padding: 14px 18px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            margin-bottom: 16px; font-size: 14px;
+        }
+        .draft-banner .draft-info { color: var(--text); }
+        .draft-banner .draft-time { color: var(--sub); font-size: 12px; }
+        .draft-banner .draft-actions { display: flex; gap: 8px; }
+
         /* ─── Hidden ─── */
         .hidden { display: none !important; }
 
@@ -543,6 +568,18 @@
 </div>
 
 <div class="container">
+
+    <!-- ── Draft Restore Banner ── -->
+    <div class="draft-banner hidden" id="draftBanner">
+        <div>
+            <div class="draft-info">💾 检测到未完成的剧本编辑</div>
+            <div class="draft-time" id="draftTime"></div>
+        </div>
+        <div class="draft-actions">
+            <button class="btn btn-ghost btn-sm" id="draftRestoreBtn">📂 恢复编辑</button>
+            <button class="btn btn-ghost btn-sm" id="draftDiscardBtn">🗑 丢弃</button>
+        </div>
+    </div>
 
     <!-- ── Input Card (保持不变) ── -->
     <div class="card" id="inputCard">
@@ -627,6 +664,10 @@
         <div class="editor-toolbar">
             <input type="text" class="editor-title-input" id="editorTitle" placeholder="剧本标题" value="">
             <div class="editor-actions">
+                <span class="save-indicator" id="saveIndicator">
+                    <span class="save-dot"></span>
+                    <span id="saveLabel">已自动保存</span>
+                </span>
                 <button class="btn btn-ghost btn-sm" id="editorDownloadBtn">⬇ 下载 YAML</button>
                 <button class="btn btn-ghost btn-sm" id="editorBackBtn">🔄 新建转换</button>
             </div>
@@ -1872,6 +1913,185 @@ function esc(s) {
     if (!s) return '';
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ════════════════ Storage Check ════════════════
+let storageAvailable = false;
+try {
+    const testKey = '_aiscript_test';
+    localStorage.setItem(testKey, '1');
+    localStorage.removeItem(testKey);
+    storageAvailable = true;
+} catch (e) {
+    console.warn('localStorage 不可用，自动保存功能将无法使用');
+}
+
+// ════════════════ Auto-save ════════════════
+const AUTOSAVE_KEY = 'aiscript-draft';
+const AUTOSAVE_DEBOUNCE_MS = 2000;
+
+let saveTimer = null;
+let lastSavedHash = '';
+
+// 计算 script 关键字段的指纹，避免重复写入
+function scriptHash(script) {
+    if (!script) return '';
+    return JSON.stringify({
+        meta: script.meta,
+        characters: script.characters,
+        structure: script.structure
+    }).length.toString(36);
+}
+
+// 防抖保存：2秒无操作后写入 localStorage
+function scheduleSave() {
+    if (!storageAvailable || !state.script) return;
+    const hash = scriptHash(state.script);
+    if (hash === lastSavedHash) return;
+
+    const indicator = $('#saveIndicator');
+    const label = $('#saveLabel');
+    if (indicator) {
+        indicator.className = 'save-indicator saving';
+        label.textContent = '保存中…';
+    }
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => doSave(hash), AUTOSAVE_DEBOUNCE_MS);
+}
+
+function doSave(hash) {
+    if (!state.script) return;
+    // 只存 script JSON，不存 rawYaml（同一份数据，省一半空间）
+    const draft = {
+        script: state.script,
+        title: state.script.meta?.title || editorTitle.value,
+        savedAt: new Date().toISOString()
+    };
+    try {
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(draft));
+        lastSavedHash = hash || scriptHash(state.script);
+        const indicator = $('#saveIndicator');
+        const label = $('#saveLabel');
+        if (indicator) {
+            indicator.className = 'save-indicator saved';
+            label.textContent = '已自动保存 ' + new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        }
+    } catch (e) {
+        showToast('⚠️ 自动保存失败：存储空间不足');
+    }
+}
+
+function clearDraft() {
+    if (storageAvailable) localStorage.removeItem(AUTOSAVE_KEY);
+    lastSavedHash = '';
+}
+
+function getDraft() {
+    if (!storageAvailable) return null;
+    try {
+        const raw = localStorage.getItem(AUTOSAVE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch { return null; }
+}
+
+// 页面加载时检查草稿
+function checkDraft() {
+    if (!storageAvailable) return;
+    const draft = getDraft();
+    if (!draft || !draft.script) return;
+
+    const savedTime = new Date(draft.savedAt);
+    const timeStr = savedTime.toLocaleString('zh-CN', {
+        month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+    const title = draft.title || draft.script?.meta?.title || '未命名';
+    $('#draftTime').textContent = '保存时间：' + timeStr + '  |  标题：' + title;
+    $('#draftBanner').classList.remove('hidden');
+}
+
+// 恢复草稿
+$('#draftRestoreBtn').addEventListener('click', () => {
+    const draft = getDraft();
+    if (!draft) return;
+    state.script = draft.script;
+    if (draft.title) editorTitle.value = draft.title;
+
+    const yamlText = scriptToYaml(draft.script);
+    const data = {
+        success: true,
+        script: draft.script,
+        rawYaml: yamlText,
+        outputSceneCount: countScenesFromScript(draft.script),
+        inputWordCount: draft.script?.meta?.wordCount || 0
+    };
+    // 直接使用 loadScriptIntoEditor 加载
+    loadScriptIntoEditor(data);
+    lastSavedHash = scriptHash(draft.script);
+    $('#draftBanner').classList.add('hidden');
+    showToast('📂 已恢复上次编辑的剧本');
+});
+
+$('#draftDiscardBtn').addEventListener('click', () => {
+    if (confirm('确定丢弃未保存的草稿吗？此操作不可撤销。')) {
+        clearDraft();
+        $('#draftBanner').classList.add('hidden');
+        showToast('🗑 草稿已丢弃');
+    }
+});
+
+function countScenesFromScript(script) {
+    let count = 0;
+    const acts = script?.structure?.acts;
+    if (acts) {
+        acts.forEach(act => {
+            if (act.scenes) count += act.scenes.length;
+        });
+    }
+    return count;
+}
+
+// 包装 loadScriptIntoEditor：进入编辑器后触发自动保存
+const originalLoadScriptIntoEditor = loadScriptIntoEditor;
+loadScriptIntoEditor = function(data) {
+    originalLoadScriptIntoEditor(data);
+    if (data.script) {
+        state.script = data.script;
+        if (storageAvailable) {
+            scheduleSave();
+        } else {
+            showToast('⚠️ 浏览器存储不可用，剧本刷新后将丢失');
+        }
+    }
+};
+
+// 包装新建转换：清除草稿
+const originalHideAll = hideAll;
+hideAll = function() {
+    clearDraft();
+    originalHideAll();
+};
+
+// 包装新建转换按钮
+editorBackBtn.addEventListener('click', () => {
+    clearDraft();
+    hideAll();
+    inputCard.classList.remove('hidden');
+});
+
+// 在所有编辑操作后触发自动保存
+const editorObserver = new MutationObserver(() => {
+    if (state.script) scheduleSave();
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const editorCard = $('#editorCard');
+    if (editorCard) {
+        editorObserver.observe(editorCard, { childList: true, subtree: true, characterData: true });
+    }
+});
+
+// 页面加载时检查草稿
+checkDraft();
 
 // ════════════════ Server Config ════════════════
 const SERVER_URL_KEY = 'aiscript-server-url';
