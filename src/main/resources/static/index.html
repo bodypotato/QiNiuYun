@@ -2249,9 +2249,13 @@ const SERVER_URL_KEY = 'aiscript-server-url';
 function getApiBase() {
     const url = localStorage.getItem(SERVER_URL_KEY);
     if (url && url.trim()) {
-        return url.trim().replace(/\/+$/, ''); // 去掉尾部斜杠
+        return url.trim().replace(/\/+$/, '');
     }
-    return ''; // 空字符串 = 使用相对路径（同源）
+    // file:// 协议下相对路径会解析成 file:///C:/api/...，自动回退到 localhost
+    if (window.location.protocol === 'file:') {
+        return 'http://localhost:8080';
+    }
+    return ''; // http(s) 协议下使用相对路径
 }
 
 function setApiBase(url) {
