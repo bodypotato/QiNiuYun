@@ -2,10 +2,13 @@ package com.body.aiscript.controller;
 
 import com.body.aiscript.dto.ConversionResponse;
 import com.body.aiscript.dto.NovelInput;
+import com.body.aiscript.model.Script;
 import com.body.aiscript.service.ScriptConversionService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +37,12 @@ public class ScriptController {
     private static final int MAX_CHAPTERS = 6;
 
     private final ScriptConversionService conversionService;
+    private final ObjectMapper yamlMapper;
 
-    public ScriptController(ScriptConversionService conversionService) {
+    public ScriptController(ScriptConversionService conversionService,
+                            @Qualifier("yamlMapper") ObjectMapper yamlMapper) {
         this.conversionService = conversionService;
+        this.yamlMapper = yamlMapper;
     }
 
     /**
@@ -357,6 +363,24 @@ public class ScriptController {
             count++;
         }
         return count;
+    }
+
+    /**
+     * 将前端编辑后的 Script JSON 序列化为 YAML 文本
+     *
+     * POST /api/script/serialize
+     * Content-Type: application/json
+     */
+    @PostMapping(value = "/script/serialize", produces = "application/x-yaml;charset=UTF-8")
+    public ResponseEntity<String> serializeScript(@RequestBody Script script) {
+        try {
+            String yaml = yamlMapper.writeValueAsString(script);
+            return ResponseEntity.ok(yaml);
+        } catch (Exception e) {
+            log.error("YAML 序列化失败", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("# 序列化失败: " + e.getMessage());
+        }
     }
 
     /**

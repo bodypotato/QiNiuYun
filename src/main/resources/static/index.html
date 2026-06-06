@@ -16,12 +16,17 @@
             --tag-bg: #f0ede3;
             --input-bg: #fcfbf7;
             --danger: #c4877b;
+            --danger-hover: #b0756a;
             --shadow: 0 2px 12px rgba(60, 50, 30, 0.06);
             --code-bg: #2c2923;
             --code-text: #e8e3d3;
             --radius-sm: 10px;
             --radius: 16px;
             --radius-lg: 22px;
+            --action-color: #5b8cbd;
+            --dialogue-color: #6b9e7a;
+            --transition-color: #9b7ec4;
+            --note-color: #c49b5e;
         }
 
         [data-theme="dark"] {
@@ -35,9 +40,14 @@
             --tag-bg: #322f28;
             --input-bg: #22201b;
             --danger: #d49589;
+            --danger-hover: #c08075;
             --shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
             --code-bg: #1e1c18;
             --code-text: #d4cfbe;
+            --action-color: #7aaddb;
+            --dialogue-color: #82b591;
+            --transition-color: #b398d8;
+            --note-color: #d4ae74;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -56,312 +66,360 @@
             padding: 48px 24px 32px;
             position: relative;
         }
-        .header .icon {
-            font-size: 44px;
-            margin-bottom: 8px;
-        }
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            color: var(--text);
-        }
+        .header .icon { font-size: 44px; margin-bottom: 8px; }
+        .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
+        .header p { color: var(--sub); font-size: 15px; margin-top: 6px; }
 
         .theme-toggle {
-            position: absolute;
-            top: 12px;
-            right: 24px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1.5px solid var(--border);
-            background: var(--card);
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            line-height: 1;
+            position: absolute; top: 12px; right: 24px;
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 1.5px solid var(--border); background: var(--card);
+            font-size: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; line-height: 1;
         }
-        .theme-toggle:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(123, 158, 143, 0.12);
-        }
-        .header p {
-            color: var(--sub);
-            font-size: 15px;
-            margin-top: 6px;
-        }
+        .theme-toggle:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(123, 158, 143, 0.12); }
 
         /* ─── Layout ─── */
         .container {
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 0 24px 60px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            max-width: 960px; margin: 0 auto; padding: 0 24px 60px;
+            display: flex; flex-direction: column; gap: 20px;
         }
 
         /* ─── Card ─── */
         .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 28px 30px;
-            box-shadow: var(--shadow);
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 28px 30px; box-shadow: var(--shadow);
         }
 
         /* ─── Mode Tabs ─── */
         .tabs {
-            display: flex;
-            gap: 6px;
-            background: var(--tag-bg);
-            border-radius: var(--radius-lg);
-            padding: 5px;
-            margin-bottom: 24px;
+            display: flex; gap: 6px; background: var(--tag-bg);
+            border-radius: var(--radius-lg); padding: 5px; margin-bottom: 24px;
         }
         .tab {
-            flex: 1;
-            padding: 10px 0;
-            text-align: center;
-            border-radius: calc(var(--radius-lg) - 4px);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--sub);
-            border: none;
-            background: transparent;
-            transition: all 0.2s ease;
+            flex: 1; padding: 10px 0; text-align: center;
+            border-radius: calc(var(--radius-lg) - 4px); cursor: pointer;
+            font-size: 14px; font-weight: 500; color: var(--sub);
+            border: none; background: transparent; transition: all 0.2s ease;
         }
-        .tab.active {
-            background: var(--card);
-            color: var(--text);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-        }
+        .tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 
         /* ─── Form ─── */
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 14px;
-        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
         .form-row.single { grid-template-columns: 1fr; }
-
         .field { display: flex; flex-direction: column; gap: 5px; }
-        .field label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--sub);
-            letter-spacing: 0.3px;
+        .field label { font-size: 13px; font-weight: 600; color: var(--sub); letter-spacing: 0.3px; }
+        .field input, .field textarea, .field select {
+            width: 100%; padding: 11px 15px; border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); font-size: 14px; font-family: inherit;
+            color: var(--text); background: var(--input-bg); outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease; resize: vertical;
         }
-        .field input,
-        .field textarea,
-        .field select {
-            width: 100%;
-            padding: 11px 15px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-family: inherit;
-            color: var(--text);
-            background: var(--input-bg);
-            outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            resize: vertical;
+        .field input:focus, .field textarea:focus, .field select:focus {
+            border-color: var(--accent); box-shadow: 0 0 0 3px rgba(123, 158, 143, 0.12);
         }
-        .field input:focus,
-        .field textarea:focus,
-        .field select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(123, 158, 143, 0.12);
-        }
-        .field textarea {
-            min-height: 280px;
-            font-size: 13px;
-            line-height: 1.8;
-        }
-        .field .hint {
-            font-size: 11px;
-            color: var(--sub);
-        }
+        .field textarea { min-height: 280px; font-size: 13px; line-height: 1.8; }
+        .field .hint { font-size: 11px; color: var(--sub); }
 
         /* ─── Upload Zone ─── */
         .upload-zone {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 52px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: var(--input-bg);
+            border: 2px dashed var(--border); border-radius: var(--radius);
+            padding: 52px 24px; text-align: center; cursor: pointer;
+            transition: all 0.2s ease; background: var(--input-bg);
         }
-        .upload-zone:hover,
-        .upload-zone.dragover {
-            border-color: var(--accent);
-            background: rgba(123, 158, 143, 0.04);
-        }
-        .upload-zone .upload-icon {
-            font-size: 42px;
-            margin-bottom: 10px;
-        }
-        .upload-zone .upload-text {
-            font-size: 15px;
-            color: var(--text);
-            font-weight: 500;
-        }
-        .upload-zone .upload-hint {
-            font-size: 12px;
-            color: var(--sub);
-            margin-top: 4px;
-        }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(123, 158, 143, 0.04); }
+        .upload-zone .upload-icon { font-size: 42px; margin-bottom: 10px; }
+        .upload-zone .upload-text { font-size: 15px; color: var(--text); font-weight: 500; }
+        .upload-zone .upload-hint { font-size: 12px; color: var(--sub); margin-top: 4px; }
         .upload-zone input[type="file"] { display: none; }
         .file-name {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            background: var(--tag-bg);
-            border-radius: var(--radius-lg);
-            font-size: 13px;
-            margin-top: 12px;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 14px; background: var(--tag-bg);
+            border-radius: var(--radius-lg); font-size: 13px; margin-top: 12px;
         }
-        .file-name .remove {
-            cursor: pointer;
-            color: var(--danger);
-            font-weight: 700;
-            font-size: 16px;
-            line-height: 1;
-        }
+        .file-name .remove { cursor: pointer; color: var(--danger); font-weight: 700; font-size: 16px; line-height: 1; }
 
         /* ─── Buttons ─── */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            padding: 12px 28px;
-            border: none;
-            border-radius: var(--radius-lg);
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
+            display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 12px 28px; border: none; border-radius: var(--radius-lg);
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease; font-family: inherit;
         }
         .btn-primary {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            padding: 14px;
-            font-size: 16px;
-            letter-spacing: 0.5px;
+            width: 100%; background: var(--accent); color: #fff;
+            padding: 14px; font-size: 16px; letter-spacing: 0.5px;
         }
         .btn-primary:hover { background: var(--accent-hover); }
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .btn-ghost {
-            background: var(--tag-bg);
-            color: var(--text);
-            font-size: 13px;
-            padding: 8px 18px;
-        }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-ghost { background: var(--tag-bg); color: var(--text); font-size: 13px; padding: 8px 18px; }
         .btn-ghost:hover { background: var(--border); }
-        .btn-sm {
-            font-size: 13px;
-            padding: 7px 16px;
-            border-radius: var(--radius-sm);
+        .btn-sm { font-size: 13px; padding: 7px 16px; border-radius: var(--radius-sm); }
+        .btn-danger { background: var(--danger); color: #fff; font-size: 13px; padding: 7px 14px; }
+        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-icon {
+            width: 32px; height: 32px; padding: 0; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border); background: var(--card);
+            cursor: pointer; font-size: 16px; transition: all 0.15s ease;
         }
+        .btn-icon:hover { border-color: var(--accent); background: var(--tag-bg); }
+        .btn-icon.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+        /* ─── Editor Toolbar ─── */
+        .editor-toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+            padding-bottom: 16px; border-bottom: 1px solid var(--border);
+        }
+        .editor-title-input {
+            font-size: 20px; font-weight: 700; border: none; background: transparent;
+            color: var(--text); padding: 4px 8px; border-radius: 6px;
+            min-width: 200px; flex: 1; outline: none; font-family: inherit;
+        }
+        .editor-title-input:focus { background: var(--input-bg); box-shadow: 0 0 0 2px var(--accent); }
+        .editor-actions { display: flex; gap: 8px; align-items: center; }
+
+        /* ─── Editor Tabs ─── */
+        .editor-tabs {
+            display: flex; gap: 2px; margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+        }
+        .editor-tab {
+            padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
+            color: var(--sub); border: none; background: none;
+            border-bottom: 2px solid transparent; margin-bottom: -2px;
+            transition: all 0.2s ease; font-family: inherit;
+        }
+        .editor-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .editor-tab:hover { color: var(--text); }
+
+        .editor-panel { display: none; }
+        .editor-panel.active { display: block; }
+
+        /* ─── Meta Editor ─── */
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .meta-grid .span-2 { grid-column: 1 / -1; }
+        .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .tag-item {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; background: var(--tag-bg); border-radius: 20px;
+            font-size: 12px; color: var(--text);
+        }
+        .tag-item .remove { cursor: pointer; color: var(--danger); font-weight: 700; font-size: 14px; }
+        .tag-add { display: flex; gap: 6px; margin-top: 4px; }
+        .tag-add input { flex: 1; padding: 6px 10px; font-size: 12px; border-radius: 20px; }
+
+        /* ─── Character Editor ─── */
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+        .char-card {
+            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            overflow: hidden; transition: all 0.2s ease;
+        }
+        .char-card.expanded { border-color: var(--accent); }
+        .char-card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; cursor: pointer; user-select: none;
+        }
+        .char-card-header:hover { background: var(--tag-bg); }
+        .char-card-header .char-name { font-weight: 600; font-size: 15px; }
+        .char-card-header .char-role-badge {
+            font-size: 11px; padding: 3px 10px; border-radius: 12px;
+            background: var(--tag-bg); color: var(--sub);
+        }
+        .char-card-body { display: none; padding: 0 16px 16px; }
+        .char-card.expanded .char-card-body { display: block; }
+        .char-field { margin-bottom: 10px; }
+        .char-field label { font-size: 12px; font-weight: 600; color: var(--sub); display: block; margin-bottom: 3px; }
+        .char-field input, .char-field textarea, .char-field select {
+            width: 100%; padding: 8px 12px; border: 1.5px solid var(--border);
+            border-radius: 8px; font-size: 13px; font-family: inherit;
+            color: var(--text); background: var(--input-bg); outline: none;
+        }
+        .char-field input:focus, .char-field textarea:focus, .char-field select:focus {
+            border-color: var(--accent); box-shadow: 0 0 0 2px rgba(123, 158, 143, 0.1);
+        }
+        .char-field textarea { min-height: 60px; resize: vertical; }
+        .add-char-btn {
+            width: 100%; padding: 16px; border: 2px dashed var(--border); border-radius: var(--radius-sm);
+            text-align: center; cursor: pointer; font-size: 14px; color: var(--sub);
+            background: transparent; transition: all 0.2s ease; font-family: inherit;
+        }
+        .add-char-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(123,158,143,0.04); }
+
+        /* ─── Structure Editor ─── */
+        .act-section {
+            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            margin-bottom: 16px; overflow: hidden;
+        }
+        .act-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 18px; background: var(--tag-bg); cursor: pointer; user-select: none;
+        }
+        .act-header:hover { filter: brightness(0.97); }
+        .act-header .act-num { font-weight: 700; font-size: 18px; color: var(--accent); }
+        .act-header .act-title { font-weight: 600; font-size: 15px; flex: 1; }
+        .act-header .act-scene-count { font-size: 12px; color: var(--sub); }
+        .act-body { display: none; padding: 16px 18px; }
+        .act-section.expanded .act-body { display: block; }
+
+        .scene-card {
+            border: 1px solid var(--border); border-radius: 10px;
+            margin-bottom: 12px; overflow: hidden;
+        }
+        .scene-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 14px; cursor: pointer; user-select: none;
+            transition: background 0.15s ease;
+        }
+        .scene-header:hover { background: var(--tag-bg); }
+        .scene-num { font-weight: 700; color: var(--accent); font-size: 14px; min-width: 50px; }
+        .scene-title-text { font-weight: 600; font-size: 14px; flex: 1; }
+        .scene-meta-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+        .scene-meta-pill {
+            font-size: 11px; padding: 2px 8px; border-radius: 10px;
+            background: var(--tag-bg); color: var(--sub);
+        }
+        .scene-body { display: none; padding: 0 14px 14px; }
+        .scene-card.expanded .scene-body { display: block; }
+        .scene-fields {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px; margin-bottom: 14px; padding-top: 8px;
+        }
+        .scene-fields .sf-full { grid-column: 1 / -1; }
+        .scene-fields label { font-size: 11px; font-weight: 600; color: var(--sub); display: block; margin-bottom: 2px; }
+        .scene-fields input, .scene-fields textarea {
+            width: 100%; padding: 7px 10px; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 13px; font-family: inherit;
+            color: var(--text); background: var(--input-bg); outline: none;
+        }
+        .scene-fields input:focus, .scene-fields textarea:focus {
+            border-color: var(--accent); box-shadow: 0 0 0 2px rgba(123, 158, 143, 0.1);
+        }
+        .scene-fields textarea { min-height: 50px; resize: vertical; }
+
+        /* ─── Content Blocks ─── */
+        .content-blocks { margin-top: 6px; }
+        .content-block {
+            border: 1px solid var(--border); border-radius: 8px;
+            margin-bottom: 8px; overflow: hidden;
+            border-left: 4px solid var(--border);
+        }
+        .content-block.type-action { border-left-color: var(--action-color); }
+        .content-block.type-dialogue { border-left-color: var(--dialogue-color); }
+        .content-block.type-transition { border-left-color: var(--transition-color); }
+        .content-block.type-note { border-left-color: var(--note-color); }
+        .cb-header {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px; background: var(--tag-bg); font-size: 12px;
+        }
+        .cb-type-badge {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;
+        }
+        .type-action .cb-type-badge { background: rgba(91,140,189,0.15); color: var(--action-color); }
+        .type-dialogue .cb-type-badge { background: rgba(107,158,122,0.15); color: var(--dialogue-color); }
+        .type-transition .cb-type-badge { background: rgba(155,126,196,0.15); color: var(--transition-color); }
+        .type-note .cb-type-badge { background: rgba(196,155,94,0.15); color: var(--note-color); }
+        .cb-char { font-weight: 600; color: var(--text); }
+        .cb-actions { margin-left: auto; display: flex; gap: 4px; }
+        .cb-body { padding: 10px 12px; }
+        .cb-body textarea {
+            width: 100%; min-height: 50px; padding: 8px 10px;
+            border: 1px solid var(--border); border-radius: 6px;
+            font-size: 13px; font-family: inherit; color: var(--text);
+            background: var(--input-bg); outline: none; resize: vertical;
+        }
+        .cb-body textarea:focus { border-color: var(--accent); }
+        .cb-dialogue-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .cb-dialogue-fields input, .cb-dialogue-fields select {
+            width: 100%; padding: 7px 10px; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 13px; font-family: inherit;
+            color: var(--text); background: var(--input-bg); outline: none;
+        }
+        .cb-dialogue-fields input:focus { border-color: var(--accent); }
+
+        .add-content-btn {
+            display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+        }
+        .add-content-btn button {
+            font-size: 12px; padding: 6px 12px; border: 1px dashed var(--border);
+            border-radius: 20px; cursor: pointer; background: transparent;
+            color: var(--sub); transition: all 0.15s ease; font-family: inherit;
+        }
+        .add-content-btn button:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
+
+        /* ─── YAML Source Tab ─── */
+        .yaml-source {
+            background: var(--code-bg); color: var(--code-text);
+            border-radius: var(--radius-sm); padding: 18px 20px;
+            font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+            font-size: 13px; line-height: 1.7; width: 100%;
+            min-height: 400px; border: none; resize: vertical; outline: none;
+        }
+        .yaml-source:focus { box-shadow: 0 0 0 2px var(--accent); }
+
+        /* ─── Add Scene / Act Buttons ─── */
+        .add-scene-btn {
+            width: 100%; padding: 12px; border: 2px dashed var(--border); border-radius: 10px;
+            text-align: center; cursor: pointer; font-size: 13px; color: var(--sub);
+            background: transparent; transition: all 0.2s ease; font-family: inherit;
+        }
+        .add-scene-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .add-act-btn {
+            width: 100%; padding: 14px; border: 2px dashed var(--border); border-radius: var(--radius-sm);
+            text-align: center; cursor: pointer; font-size: 14px; color: var(--sub);
+            background: transparent; margin-top: 8px; transition: all 0.2s ease; font-family: inherit;
+        }
+        .add-act-btn:hover { border-color: var(--accent); color: var(--accent); }
 
         /* ─── Spinner ─── */
         .spinner {
-            display: inline-block;
-            width: 18px; height: 18px;
+            display: inline-block; width: 18px; height: 18px;
             border: 2.5px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
+            border-top-color: #fff; border-radius: 50%;
             animation: spin 0.7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ─── Result ─── */
-        .result-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        .result-header h2 {
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .result-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .result-meta {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-bottom: 18px;
-        }
-        .result-meta .tag {
-            font-size: 12px;
-            padding: 5px 12px;
-            background: var(--tag-bg);
-            border-radius: var(--radius-lg);
-            color: var(--sub);
-        }
-        .yaml-output {
-            background: var(--code-bg);
-            color: var(--code-text);
-            border-radius: var(--radius-sm);
-            padding: 22px 24px;
-            font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
-            font-size: 13px;
-            line-height: 1.7;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            max-height: 560px;
-            overflow-y: auto;
-        }
-        .yaml-output::-webkit-scrollbar { width: 6px; }
-        .yaml-output::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.15);
-            border-radius: 3px;
-        }
-
         /* ─── Toast ─── */
         .toast {
-            position: fixed;
-            bottom: 32px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 24px;
-            background: var(--text);
-            color: #fff;
-            border-radius: var(--radius-lg);
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.25s ease;
-            pointer-events: none;
-            z-index: 999;
+            position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+            padding: 10px 24px; background: var(--text); color: #fff;
+            border-radius: var(--radius-lg); font-size: 14px;
+            opacity: 0; transition: opacity 0.25s ease;
+            pointer-events: none; z-index: 999;
         }
         .toast.show { opacity: 1; }
+
+        /* ─── Result Meta ─── */
+        .result-meta {
+            display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px;
+        }
+        .result-meta .tag {
+            font-size: 12px; padding: 5px 12px; background: var(--tag-bg);
+            border-radius: var(--radius-lg); color: var(--sub);
+        }
 
         /* ─── Hidden ─── */
         .hidden { display: none !important; }
 
         /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .meta-grid { grid-template-columns: 1fr; }
+            .char-grid { grid-template-columns: 1fr; }
+            .scene-fields { grid-template-columns: 1fr 1fr; }
+            .editor-toolbar { flex-direction: column; align-items: stretch; }
+            .editor-tabs { overflow-x: auto; }
+        }
         @media (max-width: 640px) {
             .form-row { grid-template-columns: 1fr; }
             .header { padding: 32px 16px 20px; }
             .header h1 { font-size: 24px; }
             .card { padding: 20px 18px; }
+            .scene-fields { grid-template-columns: 1fr; }
+            .cb-dialogue-fields { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -371,20 +429,18 @@
     <button class="theme-toggle" id="themeToggle" title="切换深色/浅色模式">🌙</button>
     <div class="icon">🎬</div>
     <h1>AI Script</h1>
-    <p>将小说自动转换为结构化 YAML 剧本，获得可编辑、可打磨的剧本初稿</p>
+    <p>将小说自动转换为结构化 YAML 剧本，在线编辑打磨</p>
 </div>
 
 <div class="container">
 
-    <!-- ── Input Card ── -->
+    <!-- ── Input Card (保持不变) ── -->
     <div class="card" id="inputCard">
-        <!-- Mode Tabs -->
         <div class="tabs">
             <button class="tab active" data-mode="text">📝 粘贴文本</button>
             <button class="tab" data-mode="file">📂 上传 TXT</button>
         </div>
 
-        <!-- Text Mode -->
         <div id="textMode">
             <div class="form-row single">
                 <div class="field">
@@ -395,7 +451,6 @@
             </div>
         </div>
 
-        <!-- File Mode -->
         <div id="fileMode" class="hidden">
             <div class="upload-zone" id="uploadZone">
                 <div class="upload-icon">📄</div>
@@ -411,7 +466,6 @@
             </div>
         </div>
 
-        <!-- Metadata -->
         <div class="form-row" style="margin-top:16px;">
             <div class="field">
                 <label>标题（选填）</label>
@@ -427,14 +481,10 @@
                 <label>题材（选填）</label>
                 <select id="genreInput">
                     <option value="">自动 / 不指定</option>
-                    <option value="武侠">武侠</option>
-                    <option value="都市">都市</option>
-                    <option value="科幻">科幻</option>
-                    <option value="悬疑">悬疑</option>
-                    <option value="言情">言情</option>
-                    <option value="历史">历史</option>
-                    <option value="奇幻">奇幻</option>
-                    <option value="其他">其他</option>
+                    <option value="武侠">武侠</option><option value="都市">都市</option>
+                    <option value="科幻">科幻</option><option value="悬疑">悬疑</option>
+                    <option value="言情">言情</option><option value="历史">历史</option>
+                    <option value="奇幻">奇幻</option><option value="其他">其他</option>
                 </select>
             </div>
             <div class="field">
@@ -443,23 +493,12 @@
             </div>
         </div>
 
-        <button class="btn btn-primary" id="convertBtn">
-            ✨ 开始转换
-        </button>
-    </div>
+        <button class="btn btn-primary" id="convertBtn">✨ 开始转换</button>
 
-    <!-- ── Result Card ── -->
-    <div class="card hidden" id="resultCard">
-        <div class="result-header">
-            <h2>📜 剧本输出</h2>
-            <div class="result-actions">
-                <button class="btn btn-ghost btn-sm" id="copyBtn">📋 复制</button>
-                <button class="btn btn-ghost btn-sm" id="downloadBtn">⬇ 下载 .yaml</button>
-                <button class="btn btn-ghost btn-sm" id="backBtn">🔄 重新转换</button>
-            </div>
+        <div id="convertStatus" class="hidden" style="text-align:center;padding:16px;color:var(--sub);">
+            <span class="spinner" style="border-color:rgba(123,158,143,0.3);border-top-color:var(--accent);"></span>
+            AI 正在分析小说并生成剧本，请稍候…
         </div>
-        <div class="result-meta" id="resultMeta"></div>
-        <div class="yaml-output" id="yamlOutput"></div>
     </div>
 
     <!-- ── Error Card ── -->
@@ -471,242 +510,1079 @@
         <button class="btn btn-ghost btn-sm" style="margin-top:12px;" id="retryBtn">🔄 返回重试</button>
     </div>
 
+    <!-- ════════════════ 剧本编辑器 ════════════════ -->
+    <div class="card hidden" id="editorCard">
+
+        <!-- Toolbar -->
+        <div class="editor-toolbar">
+            <input type="text" class="editor-title-input" id="editorTitle" placeholder="剧本标题" value="">
+            <div class="editor-actions">
+                <button class="btn btn-ghost btn-sm" id="editorDownloadBtn">⬇ 下载 YAML</button>
+                <button class="btn btn-ghost btn-sm" id="editorBackBtn">🔄 新建转换</button>
+            </div>
+        </div>
+
+        <!-- Result Meta -->
+        <div class="result-meta" id="resultMeta"></div>
+
+        <!-- Editor Tabs -->
+        <div class="editor-tabs">
+            <button class="editor-tab active" data-panel="structure">🎬 场景结构</button>
+            <button class="editor-tab" data-panel="characters">👥 角色列表</button>
+            <button class="editor-tab" data-panel="meta">📋 剧本信息</button>
+            <button class="editor-tab" data-panel="yaml">📝 YAML 源码</button>
+        </div>
+
+        <!-- Tab: 场景结构 -->
+        <div class="editor-panel active" id="panelStructure"></div>
+
+        <!-- Tab: 角色列表 -->
+        <div class="editor-panel" id="panelCharacters"></div>
+
+        <!-- Tab: 剧本信息 -->
+        <div class="editor-panel" id="panelMeta"></div>
+
+        <!-- Tab: YAML 源码 -->
+        <div class="editor-panel" id="panelYaml">
+            <textarea class="yaml-source" id="yamlSourceTextarea" spellcheck="false" placeholder="YAML 剧本…"></textarea>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button class="btn btn-ghost btn-sm" id="yamlApplyBtn">🔄 应用 YAML 修改到编辑器</button>
+                <span style="font-size:12px;color:var(--sub);align-self:center;">
+                    在 YAML 面板中直接编辑后点击上方按钮同步到可视化编辑器
+                </span>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-    // ── State ──
-    const state = { mode: 'text', file: null };
+// ════════════════ State ════════════════
+const state = {
+    mode: 'text',
+    file: null,
+    script: null,       // 当前 Script 对象
+    rawYaml: null,      // 原始 YAML 文本
+    activePanel: 'structure',
+    expandedActs: new Set(),
+    expandedScenes: new Set(),
+    expandedChars: new Set()
+};
 
-    // ── DOM refs ──
-    const $ = s => document.querySelector(s);
-    const tabs = document.querySelectorAll('.tab');
-    const textMode = $('#textMode');
-    const fileMode = $('#fileMode');
-    const uploadZone = $('#uploadZone');
-    const fileInput = $('#fileInput');
-    const fileInfo = $('#fileInfo');
-    const fileName = $('#fileName');
-    const removeFile = $('#removeFile');
-    const contentInput = $('#contentInput');
-    const wordCount = $('#wordCount');
-    const titleInput = $('#titleInput');
-    const authorInput = $('#authorInput');
-    const genreInput = $('#genreInput');
-    const styleInput = $('#styleInput');
-    const convertBtn = $('#convertBtn');
-    const inputCard = $('#inputCard');
-    const resultCard = $('#resultCard');
-    const errorCard = $('#errorCard');
-    const errorMsg = $('#errorMsg');
-    const resultMeta = $('#resultMeta');
-    const yamlOutput = $('#yamlOutput');
-    const copyBtn = $('#copyBtn');
-    const downloadBtn = $('#downloadBtn');
-    const backBtn = $('#backBtn');
-    const retryBtn = $('#retryBtn');
-    const toast = $('#toast');
+// ════════════════ DOM refs ════════════════
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 
-    // ── Tab switching ──
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            state.mode = tab.dataset.mode;
-            textMode.classList.toggle('hidden', state.mode !== 'text');
-            fileMode.classList.toggle('hidden', state.mode !== 'file');
-            checkReady();
-        });
-    });
+// Input
+const tabs = $$('.tab');
+const textMode = $('#textMode');
+const fileMode = $('#fileMode');
+const uploadZone = $('#uploadZone');
+const fileInput = $('#fileInput');
+const fileInfo = $('#fileInfo');
+const fileName = $('#fileName');
+const removeFile = $('#removeFile');
+const contentInput = $('#contentInput');
+const wordCount = $('#wordCount');
+const titleInput = $('#titleInput');
+const authorInput = $('#authorInput');
+const genreInput = $('#genreInput');
+const styleInput = $('#styleInput');
+const convertBtn = $('#convertBtn');
+const convertStatus = $('#convertStatus');
+const inputCard = $('#inputCard');
+const errorCard = $('#errorCard');
+const errorMsg = $('#errorMsg');
+const retryBtn = $('#retryBtn');
+const toast = $('#toast');
 
-    // ── File Upload ──
-    uploadZone.addEventListener('click', () => fileInput.click());
-    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-    uploadZone.addEventListener('drop', e => {
-        e.preventDefault();
-        uploadZone.classList.remove('dragover');
-        handleFile(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length) handleFile(fileInput.files[0]);
-    });
-    removeFile.addEventListener('click', () => {
-        state.file = null;
-        fileInput.value = '';
-        fileInfo.classList.add('hidden');
-        uploadZone.classList.remove('hidden');
+// Editor
+const editorCard = $('#editorCard');
+const editorTitle = $('#editorTitle');
+const resultMeta = $('#resultMeta');
+const panelStructure = $('#panelStructure');
+const panelCharacters = $('#panelCharacters');
+const panelMeta = $('#panelMeta');
+const panelYaml = $('#panelYaml');
+const yamlSourceTextarea = $('#yamlSourceTextarea');
+const editorDownloadBtn = $('#editorDownloadBtn');
+const editorBackBtn = $('#editorBackBtn');
+const yamlApplyBtn = $('#yamlApplyBtn');
+
+// ════════════════ Input: Tab switching ════════════════
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        state.mode = tab.dataset.mode;
+        textMode.classList.toggle('hidden', state.mode !== 'text');
+        fileMode.classList.toggle('hidden', state.mode !== 'file');
         checkReady();
     });
+});
 
-    function handleFile(f) {
-        if (!f) return;
-        if (!f.name.endsWith('.txt') && f.type !== 'text/plain') {
-            showToast('⚠️ 请选择 .txt 文件');
-            return;
-        }
-        state.file = f;
-        fileName.textContent = f.name + ` (${formatSize(f.size)})`;
-        uploadZone.classList.add('hidden');
-        fileInfo.classList.remove('hidden');
-        checkReady();
+// ════════════════ Input: File Upload ════════════════
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+removeFile.addEventListener('click', () => {
+    state.file = null; fileInput.value = '';
+    fileInfo.classList.add('hidden'); uploadZone.classList.remove('hidden');
+    checkReady();
+});
+
+function handleFile(f) {
+    if (!f) return;
+    if (!f.name.endsWith('.txt') && f.type !== 'text/plain') { showToast('⚠️ 请选择 .txt 文件'); return; }
+    state.file = f;
+    fileName.textContent = f.name + ` (${formatSize(f.size)})`;
+    uploadZone.classList.add('hidden'); fileInfo.classList.remove('hidden');
+    checkReady();
+}
+
+function formatSize(bytes) {
+    return bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+// ════════════════ Input: Word Count ════════════════
+contentInput.addEventListener('input', () => {
+    const len = contentInput.value.length;
+    wordCount.textContent = `${len} / 50000 字`;
+    wordCount.style.color = len > 50000 ? 'var(--danger)' : 'var(--sub)';
+    checkReady();
+});
+
+function checkReady() {
+    let ready = false;
+    if (state.mode === 'text') {
+        const len = contentInput.value.trim().length;
+        ready = len >= 100 && len <= 50000;
+    } else {
+        ready = !!state.file;
     }
+    convertBtn.disabled = !ready;
+}
 
-    function formatSize(bytes) {
-        return bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(1) + ' MB';
-    }
+// ════════════════ Convert ════════════════
+convertBtn.addEventListener('click', async () => {
+    convertBtn.classList.add('hidden');
+    convertStatus.classList.remove('hidden');
+    errorCard.classList.add('hidden');
+    editorCard.classList.add('hidden');
 
-    // ── Word count ──
-    contentInput.addEventListener('input', () => {
-        const len = contentInput.value.length;
-        wordCount.textContent = `${len} / 50000 字`;
-        wordCount.style.color = len > 50000 ? 'var(--danger)' : 'var(--sub)';
-        checkReady();
-    });
-
-    // ── Ready check ──
-    function checkReady() {
-        let ready = false;
+    try {
+        let response;
         if (state.mode === 'text') {
-            const len = contentInput.value.trim().length;
-            ready = len >= 100 && len <= 50000;
+            const body = {
+                title: titleInput.value.trim() || undefined,
+                author: authorInput.value.trim() || undefined,
+                content: contentInput.value,
+                genre: genreInput.value || undefined,
+                styleNotes: styleInput.value.trim() || undefined
+            };
+            response = await fetch('/api/convert', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
         } else {
-            ready = !!state.file;
-        }
-        convertBtn.disabled = !ready;
-    }
-
-    // ── Convert ──
-    convertBtn.addEventListener('click', async () => {
-        convertBtn.disabled = true;
-        convertBtn.innerHTML = '<span class="spinner"></span> AI 正在分析小说并生成剧本…';
-        hideResult();
-
-        try {
-            let response;
-            if (state.mode === 'text') {
-                const body = {
-                    title: titleInput.value.trim() || undefined,
-                    author: authorInput.value.trim() || undefined,
-                    content: contentInput.value,
-                    genre: genreInput.value || undefined,
-                    styleNotes: styleInput.value.trim() || undefined
-                };
-                response = await fetch('/api/convert', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-            } else {
-                const form = new FormData();
-                form.append('file', state.file);
-                if (titleInput.value.trim()) form.append('title', titleInput.value.trim());
-                if (authorInput.value.trim()) form.append('author', authorInput.value.trim());
-                if (genreInput.value) form.append('genre', genreInput.value);
-                if (styleInput.value.trim()) form.append('styleNotes', styleInput.value.trim());
-                response = await fetch('/api/convert/file', { method: 'POST', body: form });
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                showResult(data);
-            } else {
-                showError(data.message || '转换失败，请重试');
-            }
-        } catch (e) {
-            showError('网络请求失败：' + e.message);
+            const form = new FormData();
+            form.append('file', state.file);
+            if (titleInput.value.trim()) form.append('title', titleInput.value.trim());
+            if (authorInput.value.trim()) form.append('author', authorInput.value.trim());
+            if (genreInput.value) form.append('genre', genreInput.value);
+            if (styleInput.value.trim()) form.append('styleNotes', styleInput.value.trim());
+            response = await fetch('/api/convert/file', { method: 'POST', body: form });
         }
 
-        convertBtn.disabled = false;
-        convertBtn.innerHTML = '✨ 开始转换';
-        checkReady();
+        const data = await response.json();
+
+        if (data.success) {
+            loadScriptIntoEditor(data);
+        } else {
+            showError(data.message || '转换失败，请重试');
+        }
+    } catch (e) {
+        showError('网络请求失败：' + e.message);
+    }
+
+    convertBtn.classList.remove('hidden');
+    convertStatus.classList.add('hidden');
+    checkReady();
+});
+
+function showError(msg) {
+    inputCard.classList.add('hidden');
+    editorCard.classList.add('hidden');
+    errorCard.classList.remove('hidden');
+    errorMsg.textContent = msg;
+    errorCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+retryBtn.addEventListener('click', () => { hideAll(); inputCard.classList.remove('hidden'); });
+editorBackBtn.addEventListener('click', () => { hideAll(); inputCard.classList.remove('hidden'); });
+
+function hideAll() {
+    inputCard.classList.add('hidden');
+    editorCard.classList.add('hidden');
+    errorCard.classList.add('hidden');
+    convertStatus.classList.add('hidden');
+    convertBtn.classList.remove('hidden');
+}
+
+// ════════════════ Load Script into Editor ════════════════
+function loadScriptIntoEditor(data) {
+    state.script = data.script;
+    state.rawYaml = data.rawYaml;
+    state.expandedActs = new Set();
+    state.expandedScenes = new Set();
+    state.expandedChars = new Set();
+
+    // auto-expand if only one act
+    const acts = state.script?.structure?.acts;
+    if (acts && acts.length === 1) {
+        state.expandedActs.add(0);
+    }
+
+    inputCard.classList.add('hidden');
+    errorCard.classList.add('hidden');
+    editorCard.classList.remove('hidden');
+
+    // title
+    editorTitle.value = state.script?.meta?.title || '未命名剧本';
+
+    // meta tags
+    let metaHtml = '';
+    if (data.script?.meta?.title) metaHtml += `<span class="tag">📖 ${esc(data.script.meta.title)}</span>`;
+    if (data.outputSceneCount) metaHtml += `<span class="tag">🎭 ${data.outputSceneCount} 场</span>`;
+    if (data.inputWordCount) metaHtml += `<span class="tag">📝 ${data.inputWordCount} 字</span>`;
+    if (data.processingTimeMs) metaHtml += `<span class="tag">⏱ ${(data.processingTimeMs / 1000).toFixed(1)}s</span>`;
+    resultMeta.innerHTML = metaHtml;
+
+    switchPanel('structure');
+    renderAllPanels();
+    editorCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ════════════════ Editor Tabs ════════════════
+$$('.editor-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        switchPanel(tab.dataset.panel);
     });
+});
 
-    // ── Result ──
-    function showResult(data) {
-        inputCard.classList.add('hidden');
-        errorCard.classList.add('hidden');
-        resultCard.classList.remove('hidden');
+function switchPanel(name) {
+    state.activePanel = name;
+    $$('.editor-tab').forEach(t => t.classList.toggle('active', t.dataset.panel === name));
+    $$('.editor-panel').forEach(p => p.classList.toggle('active', p.id === 'panel' + name.charAt(0).toUpperCase() + name.slice(1)));
+    renderCurrentPanel();
+}
 
-        // meta tags
-        let metaHtml = '';
-        if (data.script?.meta?.title) metaHtml += `<span class="tag">📖 ${esc(data.script.meta.title)}</span>`;
-        if (data.outputSceneCount) metaHtml += `<span class="tag">🎭 ${data.outputSceneCount} 场</span>`;
-        if (data.inputWordCount) metaHtml += `<span class="tag">📝 ${data.inputWordCount} 字</span>`;
-        if (data.processingTimeMs) metaHtml += `<span class="tag">⏱ ${(data.processingTimeMs / 1000).toFixed(1)}s</span>`;
-        resultMeta.innerHTML = metaHtml;
+function renderAllPanels() {
+    renderMetaPanel();
+    renderCharactersPanel();
+    renderStructurePanel();
+    renderYamlPanel();
+}
 
-        // yaml
-        yamlOutput.textContent = data.rawYaml || '(空)';
-
-        // scroll
-        resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function renderCurrentPanel() {
+    switch (state.activePanel) {
+        case 'meta': renderMetaPanel(); break;
+        case 'characters': renderCharactersPanel(); break;
+        case 'structure': renderStructurePanel(); break;
+        case 'yaml': renderYamlPanel(); break;
     }
+}
 
-    function showError(msg) {
-        inputCard.classList.add('hidden');
-        resultCard.classList.add('hidden');
-        errorCard.classList.remove('hidden');
-        errorMsg.textContent = msg;
-        errorCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+// ════════════════ Title Sync ════════════════
+editorTitle.addEventListener('input', () => {
+    if (!state.script) return;
+    if (!state.script.meta) state.script.meta = {};
+    state.script.meta.title = editorTitle.value;
+});
 
-    function hideResult() {
-        resultCard.classList.add('hidden');
-        errorCard.classList.add('hidden');
-        inputCard.classList.remove('hidden');
-    }
+// ════════════════ Meta Panel ════════════════
+function renderMetaPanel() {
+    const m = (state.script && state.script.meta) ? state.script.meta : {};
+    ensureMetaDefaults(m);
 
-    // ── Actions ──
-    copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(yamlOutput.textContent).then(() => showToast('✅ 已复制到剪贴板'));
+    panelMeta.innerHTML = `
+        <div class="meta-grid">
+            <div class="field">
+                <label>剧本标题</label>
+                <input type="text" value="${esc(m.title || '')}" onchange="updateMeta('title', this.value)">
+            </div>
+            <div class="field">
+                <label>原著标题</label>
+                <input type="text" value="${esc(m.originalTitle || '')}" onchange="updateMeta('originalTitle', this.value)">
+            </div>
+            <div class="field">
+                <label>原著作者</label>
+                <input type="text" value="${esc(m.originalAuthor || '')}" onchange="updateMeta('originalAuthor', this.value)">
+            </div>
+            <div class="field">
+                <label>版本号</label>
+                <input type="text" value="${esc(m.scriptVersion || '1.0.0')}" onchange="updateMeta('scriptVersion', this.value)">
+            </div>
+            <div class="field">
+                <label>题材</label>
+                <input type="text" value="${esc(m.genre || '')}" onchange="updateMeta('genre', this.value)">
+            </div>
+            <div class="field">
+                <label>子题材</label>
+                <input type="text" value="${esc(m.subGenre || '')}" onchange="updateMeta('subGenre', this.value)">
+            </div>
+            <div class="field">
+                <label>语言</label>
+                <input type="text" value="${esc(m.language || 'zh-CN')}" onchange="updateMeta('language', this.value)">
+            </div>
+            <div class="field">
+                <label>源文章节数</label>
+                <input type="number" value="${m.sourceChapters || ''}" onchange="updateMeta('sourceChapters', parseInt(this.value)||null)">
+            </div>
+            <div class="field">
+                <label>字数</label>
+                <input type="number" value="${m.wordCount || ''}" onchange="updateMeta('wordCount', parseInt(this.value)||null)">
+            </div>
+            <div class="field">
+                <label>创建时间</label>
+                <input type="text" value="${esc(m.createdAt || '')}" onchange="updateMeta('createdAt', this.value)">
+            </div>
+            <div class="field span-2">
+                <label>标签</label>
+                <div class="tag-list" id="metaTagsList">
+                    ${(m.tags || []).map((t, i) => `
+                        <span class="tag-item">${esc(t)}<span class="remove" onclick="removeMetaTag(${i})">×</span></span>
+                    `).join('')}
+                </div>
+                <div class="tag-add">
+                    <input type="text" id="newMetaTag" placeholder="添加标签…" onkeydown="if(event.key==='Enter')addMetaTag()">
+                    <button class="btn btn-ghost btn-sm" onclick="addMetaTag()">+</button>
+                </div>
+            </div>
+            <div class="field span-2">
+                <label>备注</label>
+                <textarea onchange="updateMeta('notes', this.value)">${esc(m.notes || '')}</textarea>
+            </div>
+        </div>
+    `;
+}
+
+function ensureMetaDefaults(m) {
+    if (!m.title) m.title = editorTitle.value || '未命名剧本';
+    if (!m.scriptVersion) m.scriptVersion = '1.0.0';
+    if (!m.language) m.language = 'zh-CN';
+    if (!m.tags) m.tags = [];
+}
+
+function updateMeta(field, value) {
+    if (!state.script) return;
+    if (!state.script.meta) state.script.meta = {};
+    state.script.meta[field] = value;
+    if (field === 'title') editorTitle.value = value || '';
+}
+
+function addMetaTag() {
+    const input = $('#newMetaTag');
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val) return;
+    if (!state.script.meta) state.script.meta = {};
+    if (!state.script.meta.tags) state.script.meta.tags = [];
+    state.script.meta.tags.push(val);
+    input.value = '';
+    renderMetaPanel();
+}
+
+function removeMetaTag(index) {
+    if (!state.script.meta || !state.script.meta.tags) return;
+    state.script.meta.tags.splice(index, 1);
+    renderMetaPanel();
+}
+
+// ════════════════ Characters Panel ════════════════
+function renderCharactersPanel() {
+    const chars = (state.script && state.script.characters) ? state.script.characters : [];
+
+    panelCharacters.innerHTML = `
+        <div class="char-grid">
+            ${chars.map((ch, i) => renderCharCard(ch, i)).join('')}
+        </div>
+        <button class="add-char-btn" onclick="addCharacter()">＋ 添加角色</button>
+    `;
+
+    // restore expanded state
+    state.expandedChars.forEach(i => {
+        const card = panelCharacters.querySelector(`.char-card[data-char-index="${i}"]`);
+        if (card) card.classList.add('expanded');
     });
-    downloadBtn.addEventListener('click', () => {
-        const blob = new Blob([yamlOutput.textContent], { type: 'application/x-yaml;charset=UTF-8' });
+}
+
+function renderCharCard(ch, index) {
+    const roleLabels = { protagonist: '主角', antagonist: '反派', supporting: '配角', minor: '次要', cameo: '客串' };
+    const roleBadge = roleLabels[ch.role] || ch.role || '未设定';
+    const isExpanded = state.expandedChars.has(index);
+    const charId = ch.id || `char_${String(index + 1).padStart(3, '0')}`;
+
+    return `
+        <div class="char-card ${isExpanded ? 'expanded' : ''}" data-char-index="${index}">
+            <div class="char-card-header" onclick="toggleCharCard(${index})">
+                <span class="char-name">${esc(ch.name || '未命名角色')}</span>
+                <span class="char-role-badge">${esc(roleBadge)}</span>
+            </div>
+            <div class="char-card-body">
+                <div class="char-field">
+                    <label>角色 ID</label>
+                    <input type="text" value="${esc(charId)}" onchange="updateChar(${index},'id',this.value)">
+                </div>
+                <div class="char-field">
+                    <label>姓名</label>
+                    <input type="text" value="${esc(ch.name || '')}" onchange="updateChar(${index},'name',this.value)">
+                </div>
+                <div class="char-field">
+                    <label>别名（逗号分隔）</label>
+                    <input type="text" value="${esc((ch.alias || []).join(', '))}" onchange="updateCharAlias(${index}, this.value)">
+                </div>
+                <div class="char-field">
+                    <label>角色定位</label>
+                    <select onchange="updateChar(${index},'role',this.value)">
+                        ${['protagonist','antagonist','supporting','minor','cameo'].map(r =>
+                            `<option value="${r}" ${ch.role === r ? 'selected' : ''}>${roleLabels[r] || r}</option>`
+                        ).join('')}
+                        ${!['protagonist','antagonist','supporting','minor','cameo'].includes(ch.role) && ch.role ? `<option value="${esc(ch.role)}" selected>${esc(ch.role)}</option>` : ''}
+                    </select>
+                </div>
+                <div class="char-field">
+                    <label>角色原型</label>
+                    <input type="text" value="${esc(ch.archetype || '')}" onchange="updateChar(${index},'archetype',this.value)">
+                </div>
+                <div class="char-field">
+                    <label>性别</label>
+                    <select onchange="updateChar(${index},'gender',this.value)">
+                        <option value="">未设定</option>
+                        <option value="男" ${ch.gender === '男' ? 'selected' : ''}>男</option>
+                        <option value="女" ${ch.gender === '女' ? 'selected' : ''}>女</option>
+                        <option value="其他" ${ch.gender === '其他' ? 'selected' : ''}>其他</option>
+                    </select>
+                </div>
+                <div class="char-field">
+                    <label>年龄</label>
+                    <input type="text" value="${esc(ch.age || '')}" onchange="updateChar(${index},'age',this.value)">
+                </div>
+                <div class="char-field">
+                    <label>外貌描述</label>
+                    <textarea onchange="updateChar(${index},'appearance',this.value)">${esc(ch.appearance || '')}</textarea>
+                </div>
+                <div class="char-field">
+                    <label>性格特质（逗号分隔）</label>
+                    <input type="text" value="${esc((ch.personality || []).join(', '))}" onchange="updateCharPersonality(${index}, this.value)">
+                </div>
+                <div class="char-field">
+                    <label>背景故事</label>
+                    <textarea onchange="updateChar(${index},'background',this.value)">${esc(ch.background || '')}</textarea>
+                </div>
+                <div class="char-field">
+                    <label>核心动机</label>
+                    <input type="text" value="${esc(ch.motivation || '')}" onchange="updateChar(${index},'motivation',this.value)">
+                </div>
+                <div class="char-field">
+                    <label>成长轨迹</label>
+                    <textarea onchange="updateChar(${index},'arc',this.value)">${esc(ch.arc || '')}</textarea>
+                </div>
+                <div class="char-field">
+                    <label>备注</label>
+                    <input type="text" value="${esc(ch.notes || '')}" onchange="updateChar(${index},'notes',this.value)">
+                </div>
+                <!-- Relationships -->
+                <div class="char-field">
+                    <label>关系列表</label>
+                    ${(ch.relationships || []).map((rel, ri) => `
+                        <div style="display:flex;gap:6px;margin-bottom:4px;align-items:center;">
+                            <input type="text" value="${esc(rel.target || '')}" placeholder="关联角色 ID" style="flex:1;font-size:12px;padding:6px 8px;"
+                                onchange="updateCharRel(${index},${ri},'target',this.value)">
+                            <input type="text" value="${esc(rel.type || '')}" placeholder="关系类型" style="flex:1;font-size:12px;padding:6px 8px;"
+                                onchange="updateCharRel(${index},${ri},'type',this.value)">
+                            <input type="text" value="${esc(rel.description || '')}" placeholder="描述" style="flex:2;font-size:12px;padding:6px 8px;"
+                                onchange="updateCharRel(${index},${ri},'description',this.value)">
+                            <button class="btn-icon danger" onclick="removeCharRel(${index},${ri})" title="删除">×</button>
+                        </div>
+                    `).join('')}
+                    <button class="btn btn-ghost btn-sm" style="margin-top:4px;" onclick="addCharRel(${index})">＋ 添加关系</button>
+                </div>
+                <button class="btn btn-danger btn-sm" style="margin-top:12px;" onclick="deleteCharacter(${index})">🗑 删除角色</button>
+            </div>
+        </div>
+    `;
+}
+
+function toggleCharCard(index) {
+    if (state.expandedChars.has(index)) {
+        state.expandedChars.delete(index);
+    } else {
+        state.expandedChars.add(index);
+    }
+    renderCharactersPanel();
+}
+
+function addCharacter() {
+    if (!state.script) return;
+    if (!state.script.characters) state.script.characters = [];
+    const idx = state.script.characters.length;
+    state.script.characters.push({
+        id: `char_${String(idx + 1).padStart(3, '0')}`,
+        name: '新角色',
+        role: 'supporting',
+        alias: [],
+        personality: [],
+        relationships: []
+    });
+    state.expandedChars.add(idx);
+    renderCharactersPanel();
+    panelCharacters.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function deleteCharacter(index) {
+    if (!state.script || !state.script.characters) return;
+    const ch = state.script.characters[index];
+    if (!confirm(`确定删除角色「${ch.name || '未命名'}」吗？此操作不可撤销。`)) return;
+    state.script.characters.splice(index, 1);
+    state.expandedChars.clear();
+    renderCharactersPanel();
+    renderStructurePanel(); // 场景中的 characters_present 可能引用此角色
+    showToast('角色已删除');
+}
+
+function updateChar(index, field, value) {
+    if (!state.script || !state.script.characters) return;
+    state.script.characters[index][field] = value;
+}
+
+function updateCharAlias(index, value) {
+    if (!state.script || !state.script.characters) return;
+    state.script.characters[index].alias = value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+}
+
+function updateCharPersonality(index, value) {
+    if (!state.script || !state.script.characters) return;
+    state.script.characters[index].personality = value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+}
+
+function updateCharRel(charIndex, relIndex, field, value) {
+    if (!state.script || !state.script.characters) return;
+    const ch = state.script.characters[charIndex];
+    if (!ch.relationships) ch.relationships = [];
+    ch.relationships[relIndex][field] = value;
+}
+
+function addCharRel(charIndex) {
+    if (!state.script || !state.script.characters) return;
+    const ch = state.script.characters[charIndex];
+    if (!ch.relationships) ch.relationships = [];
+    ch.relationships.push({ target: '', type: '', description: '' });
+    renderCharactersPanel();
+}
+
+function removeCharRel(charIndex, relIndex) {
+    if (!state.script || !state.script.characters) return;
+    const ch = state.script.characters[charIndex];
+    ch.relationships.splice(relIndex, 1);
+    renderCharactersPanel();
+}
+
+// ════════════════ Structure Panel ════════════════
+function renderStructurePanel() {
+    const acts = (state.script && state.script.structure && state.script.structure.acts)
+        ? state.script.structure.acts : [];
+
+    panelStructure.innerHTML = `
+        ${acts.map((act, ai) => renderActSection(act, ai)).join('')}
+        <button class="add-act-btn" onclick="addAct()">＋ 添加一幕</button>
+    `;
+}
+
+function renderActSection(act, actIndex) {
+    const isExpanded = state.expandedActs.has(actIndex);
+    const scenes = act.scenes || [];
+
+    return `
+        <div class="act-section ${isExpanded ? 'expanded' : ''}" data-act-index="${actIndex}">
+            <div class="act-header" onclick="toggleAct(${actIndex})">
+                <span class="act-num">第${act.actNumber || actIndex + 1}幕</span>
+                <span class="act-title">${esc(act.title || '未命名幕')}</span>
+                <span class="act-scene-count">${scenes.length} 场</span>
+                <button class="btn-icon danger" onclick="event.stopPropagation();deleteAct(${actIndex})" title="删除这一幕">🗑</button>
+            </div>
+            <div class="act-body">
+                <div style="display:flex;gap:10px;margin-bottom:14px;">
+                    <div class="field" style="flex:1;">
+                        <label>幕编号</label>
+                        <input type="number" value="${act.actNumber || actIndex + 1}" onchange="updateAct(${actIndex},'actNumber',parseInt(this.value))">
+                    </div>
+                    <div class="field" style="flex:2;">
+                        <label>幕标题</label>
+                        <input type="text" value="${esc(act.title || '')}" onchange="updateAct(${actIndex},'title',this.value)">
+                    </div>
+                </div>
+                <div class="field" style="margin-bottom:14px;">
+                    <label>幕概要</label>
+                    <textarea onchange="updateAct(${actIndex},'synopsis',this.value)">${esc(act.synopsis || '')}</textarea>
+                </div>
+
+                ${scenes.map((scene, si) => renderSceneCard(scene, actIndex, si)).join('')}
+
+                <button class="add-scene-btn" onclick="addScene(${actIndex})">＋ 添加一场戏</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderSceneCard(scene, actIndex, sceneIndex) {
+    const sceneKey = `${actIndex}-${sceneIndex}`;
+    const isExpanded = state.expandedScenes.has(sceneKey);
+    const charIds = scene.charactersPresent || [];
+
+    return `
+        <div class="scene-card ${isExpanded ? 'expanded' : ''}" data-scene-key="${sceneKey}">
+            <div class="scene-header" onclick="toggleScene('${sceneKey}')">
+                <span class="scene-num">第${scene.sceneNumber || sceneIndex + 1}场</span>
+                <span class="scene-title-text">${esc(scene.sceneTitle || '未命名场')}</span>
+                <div class="scene-meta-pills">
+                    ${scene.location ? `<span class="scene-meta-pill">📍 ${esc(scene.location)}</span>` : ''}
+                    ${scene.time ? `<span class="scene-meta-pill">🕐 ${esc(scene.time)}</span>` : ''}
+                    ${scene.mood ? `<span class="scene-meta-pill">🎭 ${esc(scene.mood)}</span>` : ''}
+                </div>
+                <button class="btn-icon danger" onclick="event.stopPropagation();deleteScene(${actIndex},${sceneIndex})" title="删除这场戏">🗑</button>
+            </div>
+            <div class="scene-body">
+                <div class="scene-fields">
+                    <div>
+                        <label>场编号</label>
+                        <input type="number" value="${scene.sceneNumber || sceneIndex + 1}" onchange="updateScene(${actIndex},${sceneIndex},'sceneNumber',parseInt(this.value))">
+                    </div>
+                    <div>
+                        <label>场标题</label>
+                        <input type="text" value="${esc(scene.sceneTitle || '')}" onchange="updateScene(${actIndex},${sceneIndex},'sceneTitle',this.value)">
+                    </div>
+                    <div>
+                        <label>地点</label>
+                        <input type="text" value="${esc(scene.location || '')}" onchange="updateScene(${actIndex},${sceneIndex},'location',this.value)">
+                    </div>
+                    <div>
+                        <label>时间</label>
+                        <input type="text" value="${esc(scene.time || '')}" onchange="updateScene(${actIndex},${sceneIndex},'time',this.value)">
+                    </div>
+                    <div>
+                        <label>时期</label>
+                        <input type="text" value="${esc(scene.timePeriod || '')}" onchange="updateScene(${actIndex},${sceneIndex},'timePeriod',this.value)">
+                    </div>
+                    <div>
+                        <label>氛围</label>
+                        <input type="text" value="${esc(scene.mood || '')}" onchange="updateScene(${actIndex},${sceneIndex},'mood',this.value)">
+                    </div>
+                    <div>
+                        <label>灯光</label>
+                        <input type="text" value="${esc(scene.lighting || '')}" onchange="updateScene(${actIndex},${sceneIndex},'lighting',this.value)">
+                    </div>
+                    <div>
+                        <label>来源章节</label>
+                        <input type="number" value="${scene.sourceChapter || ''}" onchange="updateScene(${actIndex},${sceneIndex},'sourceChapter',parseInt(this.value)||null)">
+                    </div>
+                    <div class="sf-full">
+                        <label>出场角色 ID（逗号分隔）</label>
+                        <input type="text" value="${charIds.join(', ')}" onchange="updateSceneChars(${actIndex},${sceneIndex},this.value)">
+                    </div>
+                    <div class="sf-full">
+                        <label>场概要</label>
+                        <textarea onchange="updateScene(${actIndex},${sceneIndex},'synopsis',this.value)">${esc(scene.synopsis || '')}</textarea>
+                    </div>
+                </div>
+
+                <!-- Content Blocks -->
+                <div class="content-blocks">
+                    <label style="font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px;display:block;">内容块</label>
+                    ${(scene.content || []).map((cb, bi) => renderContentBlock(cb, actIndex, sceneIndex, bi)).join('')}
+                </div>
+                <div class="add-content-btn">
+                    <button onclick="addContentBlock(${actIndex},${sceneIndex},'action')">🎬 动作</button>
+                    <button onclick="addContentBlock(${actIndex},${sceneIndex},'dialogue')">💬 对话</button>
+                    <button onclick="addContentBlock(${actIndex},${sceneIndex},'transition')">🎞 转场</button>
+                    <button onclick="addContentBlock(${actIndex},${sceneIndex},'note')">📝 备注</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderContentBlock(cb, actIndex, sceneIndex, blockIndex) {
+    const typeMap = { action: '动作', dialogue: '对话', transition: '转场', note: '备注' };
+    const typeName = typeMap[cb.type] || cb.type || '未知';
+    const charName = cb.characterName || '';
+
+    let inner = '';
+
+    if (cb.type === 'dialogue') {
+        inner = `
+            <div class="cb-dialogue-fields">
+                <div>
+                    <label style="font-size:10px;color:var(--sub);">说话人角色名</label>
+                    <input type="text" value="${esc(charName)}" onchange="updateContentBlock(${actIndex},${sceneIndex},${blockIndex},'characterName',this.value)" placeholder="角色名">
+                </div>
+                <div>
+                    <label style="font-size:10px;color:var(--sub);">角色 ID</label>
+                    <input type="text" value="${esc(cb.character || '')}" onchange="updateContentBlock(${actIndex},${sceneIndex},${blockIndex},'character',this.value)" placeholder="char_001">
+                </div>
+                <div>
+                    <label style="font-size:10px;color:var(--sub);">情感</label>
+                    <input type="text" value="${esc(cb.emotion || '')}" onchange="updateContentBlock(${actIndex},${sceneIndex},${blockIndex},'emotion',this.value)" placeholder="如：愤怒">
+                </div>
+                <div>
+                    <label style="font-size:10px;color:var(--sub);">潜台词</label>
+                    <input type="text" value="${esc(cb.subtext || '')}" onchange="updateContentBlock(${actIndex},${sceneIndex},${blockIndex},'subtext',this.value)" placeholder="潜台词">
+                </div>
+            </div>
+        `;
+    }
+
+    if (cb.type === 'action') {
+        inner = `
+            <div style="margin-bottom:8px;">
+                <label style="font-size:10px;color:var(--sub);">镜头指示</label>
+                <input type="text" value="${esc(cb.camera || '')}" onchange="updateContentBlock(${actIndex},${sceneIndex},${blockIndex},'camera',this.value)" placeholder="如：特写、远景、摇镜">
+            </div>
+        `;
+    }
+
+    if (cb.type === 'note') {
+        inner = `
+            <div style="margin-bottom:8px;">
+                <label style="font-size:10px;color:var(--sub);">时长提示</label>
+                <input type="text" value="${esc(cb.durationHint || '')}" onchange="updateContentBlock(${actIndex},${sceneIndex},${blockIndex},'durationHint',this.value)" placeholder="如：约30秒">
+            </div>
+        `;
+    }
+
+    return `
+        <div class="content-block type-${cb.type || 'action'}">
+            <div class="cb-header">
+                <span class="cb-type-badge">${typeName}</span>
+                ${charName ? `<span class="cb-char">${esc(charName)}</span>` : ''}
+                <div class="cb-actions">
+                    ${blockIndex > 0 ? `<button class="btn-icon" onclick="moveContentBlock(${actIndex},${sceneIndex},${blockIndex},'up')" title="上移">↑</button>` : ''}
+                    <button class="btn-icon" onclick="moveContentBlock(${actIndex},${sceneIndex},${blockIndex},'down')" title="下移">↓</button>
+                    <button class="btn-icon danger" onclick="deleteContentBlock(${actIndex},${sceneIndex},${blockIndex})" title="删除">×</button>
+                </div>
+            </div>
+            <div class="cb-body">
+                ${inner}
+                <textarea onchange="updateContentBlock(${actIndex},${sceneIndex},${blockIndex},'text',this.value)">${esc(cb.text || '')}</textarea>
+            </div>
+        </div>
+    `;
+}
+
+// ════════════════ Structure: Toggle ════════════════
+function toggleAct(index) {
+    if (state.expandedActs.has(index)) {
+        state.expandedActs.delete(index);
+    } else {
+        state.expandedActs.add(index);
+    }
+    renderStructurePanel();
+}
+
+function toggleScene(key) {
+    if (state.expandedScenes.has(key)) {
+        state.expandedScenes.delete(key);
+    } else {
+        state.expandedScenes.add(key);
+    }
+    renderStructurePanel();
+}
+
+// ════════════════ Structure: CRUD ════════════════
+function ensureStructure() {
+    if (!state.script) return;
+    if (!state.script.structure) state.script.structure = { acts: [] };
+    if (!state.script.structure.acts) state.script.structure.acts = [];
+}
+
+function addAct() {
+    ensureStructure();
+    const acts = state.script.structure.acts;
+    const idx = acts.length;
+    acts.push({
+        actNumber: idx + 1,
+        title: '新幕',
+        synopsis: '',
+        scenes: []
+    });
+    state.expandedActs.add(idx);
+    renderStructurePanel();
+    panelStructure.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function deleteAct(actIndex) {
+    ensureStructure();
+    const acts = state.script.structure.acts;
+    if (!confirm(`确定删除第 ${actIndex + 1} 幕及其所有场景吗？此操作不可撤销。`)) return;
+    acts.splice(actIndex, 1);
+    state.expandedActs.clear();
+    state.expandedScenes.clear();
+    renderStructurePanel();
+    showToast('幕已删除');
+}
+
+function updateAct(actIndex, field, value) {
+    ensureStructure();
+    state.script.structure.acts[actIndex][field] = value;
+}
+
+function addScene(actIndex) {
+    ensureStructure();
+    const scenes = state.script.structure.acts[actIndex].scenes;
+    if (!scenes) state.script.structure.acts[actIndex].scenes = [];
+    const si = state.script.structure.acts[actIndex].scenes.length;
+    state.script.structure.acts[actIndex].scenes.push({
+        sceneNumber: si + 1,
+        sceneTitle: '新场景',
+        location: '',
+        time: '',
+        mood: '',
+        lighting: '',
+        charactersPresent: [],
+        synopsis: '',
+        content: []
+    });
+    state.expandedScenes.add(`${actIndex}-${si}`);
+    state.expandedActs.add(actIndex);
+    renderStructurePanel();
+}
+
+function deleteScene(actIndex, sceneIndex) {
+    ensureStructure();
+    if (!confirm('确定删除这场戏吗？此操作不可撤销。')) return;
+    state.script.structure.acts[actIndex].scenes.splice(sceneIndex, 1);
+    state.expandedScenes.clear();
+    renderStructurePanel();
+    showToast('场景已删除');
+}
+
+function updateScene(actIndex, sceneIndex, field, value) {
+    ensureStructure();
+    state.script.structure.acts[actIndex].scenes[sceneIndex][field] = value;
+}
+
+function updateSceneChars(actIndex, sceneIndex, value) {
+    ensureStructure();
+    const ids = value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+    state.script.structure.acts[actIndex].scenes[sceneIndex].charactersPresent = ids;
+}
+
+// ════════════════ Content Blocks: CRUD ════════════════
+function addContentBlock(actIndex, sceneIndex, type) {
+    ensureStructure();
+    const scene = state.script.structure.acts[actIndex].scenes[sceneIndex];
+    if (!scene.content) scene.content = [];
+    const block = { type: type, text: '' };
+    if (type === 'dialogue') { block.character = ''; block.characterName = ''; block.emotion = ''; block.subtext = ''; }
+    if (type === 'action') { block.camera = ''; }
+    if (type === 'note') { block.durationHint = ''; }
+    scene.content.push(block);
+    state.expandedScenes.add(`${actIndex}-${sceneIndex}`);
+    state.expandedActs.add(actIndex);
+    renderStructurePanel();
+}
+
+function deleteContentBlock(actIndex, sceneIndex, blockIndex) {
+    ensureStructure();
+    const scene = state.script.structure.acts[actIndex].scenes[sceneIndex];
+    scene.content.splice(blockIndex, 1);
+    renderStructurePanel();
+}
+
+function updateContentBlock(actIndex, sceneIndex, blockIndex, field, value) {
+    ensureStructure();
+    state.script.structure.acts[actIndex].scenes[sceneIndex].content[blockIndex][field] = value;
+}
+
+function moveContentBlock(actIndex, sceneIndex, blockIndex, direction) {
+    ensureStructure();
+    const blocks = state.script.structure.acts[actIndex].scenes[sceneIndex].content;
+    const newIndex = direction === 'up' ? blockIndex - 1 : blockIndex + 1;
+    if (newIndex < 0 || newIndex >= blocks.length) return;
+    [blocks[blockIndex], blocks[newIndex]] = [blocks[newIndex], blocks[blockIndex]];
+    renderStructurePanel();
+}
+
+// ════════════════ YAML Panel ════════════════
+function renderYamlPanel() {
+    // 用简单的 JS 序列化生成 YAML 预览
+    const yaml = state.script ? scriptToYaml(state.script) : '';
+    yamlSourceTextarea.value = yaml;
+}
+
+// 简易 YAML 序列化器（用于预览；下载时调用后端确保精确格式）
+function scriptToYaml(script) {
+    const lines = [];
+    lines.push('script:');
+    pushObj(script, lines, 1);
+    return lines.join('\n');
+
+    function pushObj(obj, lines, indent) {
+        if (obj === null || obj === undefined) return;
+        const pad = '  '.repeat(indent);
+        const keys = Object.keys(obj);
+
+        // 按 property order 排序
+        const order = ['meta','characters','structure','revision_history'];
+        keys.sort((a,b) => {
+            const ai = order.indexOf(a), bi = order.indexOf(b);
+            return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+        });
+
+        for (const key of keys) {
+            const val = obj[key];
+            if (val === null || val === undefined) continue;
+            const yamlKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+
+            if (Array.isArray(val)) {
+                if (val.length === 0) {
+                    lines.push(`${pad}${yamlKey}: []`);
+                } else if (typeof val[0] === 'object' && val[0] !== null) {
+                    lines.push(`${pad}${yamlKey}:`);
+                    for (const item of val) {
+                        lines.push(`${pad}- `);
+                        pushObj(item, lines, indent + 2);
+                    }
+                } else {
+                    lines.push(`${pad}${yamlKey}: [${val.map(v => typeof v === 'string' ? `"${escapeYamlStr(v)}"` : v).join(', ')}]`);
+                }
+            } else if (typeof val === 'object') {
+                lines.push(`${pad}${yamlKey}:`);
+                pushObj(val, lines, indent + 1);
+            } else if (typeof val === 'string') {
+                if (val.includes('\n')) {
+                    lines.push(`${pad}${yamlKey}: |`);
+                    for (const line of val.split('\n')) {
+                        lines.push(`${pad}  ${line}`);
+                    }
+                } else {
+                    lines.push(`${pad}${yamlKey}: ${escapeYamlVal(val)}`);
+                }
+            } else if (typeof val === 'number') {
+                lines.push(`${pad}${yamlKey}: ${val}`);
+            } else if (typeof val === 'boolean') {
+                lines.push(`${pad}${yamlKey}: ${val}`);
+            }
+        }
+    }
+
+    function escapeYamlStr(s) {
+        return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    }
+
+    function escapeYamlVal(s) {
+        if (!s) return '""';
+        if (/[:\{\}\[\],&\*\?!\|>'"@`#\n]/.test(s) || s.startsWith(' ') || s.endsWith(' ') || /^\d/.test(s)) {
+            return `"${escapeYamlStr(s)}"`;
+        }
+        return s;
+    }
+}
+
+// 从 YAML 文本同步回 Script 对象
+yamlApplyBtn.addEventListener('click', async () => {
+    try {
+        // 尝试用后端解析 YAML -> JSON
+        const yamlText = yamlSourceTextarea.value;
+        // 使用简单的 JSON 回退：如果 YAML 看起来像 JSON，直接解析
+        // 实际无法在前端解析 YAML，所以这里我们尝试 POST 到一个隐形解析端点
+        // 由于没有解析端点，我们做一个折中：提示用户
+        showToast('⚠️ YAML 直接解析暂不支持。请使用可视化编辑器修改，或在 YAML 面板修改后手动下载。');
+    } catch(e) {
+        showToast('解析失败: ' + e.message);
+    }
+});
+
+// ════════════════ Download ════════════════
+editorDownloadBtn.addEventListener('click', async () => {
+    if (!state.script) return;
+    try {
+        const response = await fetch('/api/script/serialize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state.script)
+        });
+        if (!response.ok) throw new Error('序列化失败');
+        const yaml = await response.text();
+        const blob = new Blob([yaml], { type: 'application/x-yaml;charset=UTF-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = (titleInput.value.trim() || 'script') + '.yaml';
+        a.download = (state.script.meta?.title || 'script') + '.yaml';
         a.click();
         URL.revokeObjectURL(url);
-    });
-    backBtn.addEventListener('click', () => { hideResult(); });
-    retryBtn.addEventListener('click', () => { hideResult(); });
-
-    // ── Toast ──
-    function showToast(msg) {
-        toast.textContent = msg;
-        toast.classList.add('show');
-        clearTimeout(toast._t);
-        toast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+        showToast('✅ YAML 已下载');
+    } catch (e) {
+        // 回退：使用前端序列化
+        try {
+            const yaml = scriptToYaml(state.script);
+            const blob = new Blob([yaml], { type: 'application/x-yaml;charset=UTF-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (state.script.meta?.title || 'script') + '.yaml';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('✅ YAML 已下载（前端序列化）');
+        } catch (e2) {
+            showToast('❌ 下载失败: ' + e2.message);
+        }
     }
+});
 
-    // ── Helpers ──
-    function esc(s) { return s.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// ════════════════ Toast ════════════════
+function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+}
 
-    // ── Theme ──
-    const themeToggle = $('#themeToggle');
-    const THEME_KEY = 'app-theme';
+// ════════════════ Helpers ════════════════
+function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-    function applyTheme(t) {
-        document.documentElement.setAttribute('data-theme', t);
-        themeToggle.textContent = t === 'dark' ? '☀️' : '🌙';
-    }
+// ════════════════ Theme ════════════════
+const themeToggle = $('#themeToggle');
+const THEME_KEY = 'app-theme';
 
-    themeToggle.addEventListener('click', () => {
-        const next = (document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark';
-        localStorage.setItem(THEME_KEY, next);
-        applyTheme(next);
-    });
+function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeToggle.textContent = t === 'dark' ? '☀️' : '🌙';
+}
 
-    (function loadTheme() {
-        applyTheme(localStorage.getItem(THEME_KEY) || 'light');
-    })();
+themeToggle.addEventListener('click', () => {
+    const next = (document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+});
 
-    // init
-    checkReady();
+(function loadTheme() {
+    applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+})();
+
+// init
+checkReady();
 </script>
 </body>
 </html>
