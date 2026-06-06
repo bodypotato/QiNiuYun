@@ -527,6 +527,66 @@
         .draft-banner .draft-time { color: var(--sub); font-size: 12px; }
         .draft-banner .draft-actions { display: flex; gap: 8px; }
 
+        /* ─── Scene Quick Nav ─── */
+        .scene-nav-toggle {
+            position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+            width: 36px; height: 80px; border-radius: 18px 0 0 18px;
+            border: 1px solid var(--border); border-right: none;
+            background: var(--card); cursor: pointer; z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: var(--sub); transition: all 0.2s ease;
+            box-shadow: -2px 0 12px rgba(0,0,0,0.06);
+            writing-mode: vertical-lr; letter-spacing: 2px;
+        }
+        .scene-nav-toggle:hover { color: var(--accent); width: 42px; }
+        .scene-nav-panel {
+            position: fixed; right: 0; top: 0; bottom: 0; width: 280px;
+            background: var(--card); border-left: 1px solid var(--border);
+            z-index: 300; transform: translateX(100%);
+            transition: transform 0.25s ease; display: flex; flex-direction: column;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+        }
+        .scene-nav-panel.open { transform: translateX(0); }
+        .scene-nav-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 20px; border-bottom: 1px solid var(--border);
+        }
+        .scene-nav-header h3 { font-size: 15px; font-weight: 700; }
+        .scene-nav-list {
+            flex: 1; overflow-y: auto; padding: 12px 0;
+        }
+        .scene-nav-list::-webkit-scrollbar { width: 4px; }
+        .scene-nav-list::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.12); border-radius: 2px;
+        }
+        .scene-nav-act {
+            padding: 8px 20px 4px; font-size: 11px; font-weight: 700;
+            color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .scene-nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 20px 9px 28px; cursor: pointer;
+            font-size: 13px; color: var(--text); transition: background 0.12s ease;
+            border-left: 2px solid transparent;
+        }
+        .scene-nav-item:hover { background: var(--tag-bg); }
+        .scene-nav-item .nav-scene-num {
+            font-weight: 700; color: var(--sub); font-size: 11px; min-width: 32px;
+        }
+        .scene-nav-item .nav-scene-info { flex: 1; min-width: 0; }
+        .scene-nav-item .nav-scene-title {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .scene-nav-item .nav-scene-loc {
+            font-size: 11px; color: var(--sub); white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .scene-nav-mask {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.25);
+            z-index: 250; display: none;
+        }
+        .scene-nav-mask.show { display: block; }
+
         /* ─── Hidden ─── */
         .hidden { display: none !important; }
 
@@ -705,6 +765,17 @@
         </div>
     </div>
 
+</div>
+
+<!-- ── Scene Quick Nav ── -->
+<button class="scene-nav-toggle hidden" id="sceneNavToggle" title="场景导航">场景导航</button>
+<div class="scene-nav-mask" id="sceneNavMask"></div>
+<div class="scene-nav-panel" id="sceneNavPanel">
+    <div class="scene-nav-header">
+        <h3>📑 场景导航</h3>
+        <button class="modal-close" id="sceneNavClose">×</button>
+    </div>
+    <div class="scene-nav-list" id="sceneNavList"></div>
 </div>
 
 <!-- ── Rewrite Modal ── -->
@@ -2092,6 +2163,85 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 页面加载时检查草稿
 checkDraft();
+
+// ════════════════ Scene Quick Nav ════════════════
+const sceneNavToggle = $('#sceneNavToggle');
+const sceneNavPanel = $('#sceneNavPanel');
+const sceneNavMask = $('#sceneNavMask');
+const sceneNavList = $('#sceneNavList');
+const sceneNavClose = $('#sceneNavClose');
+
+function openSceneNav() {
+    renderSceneNav();
+    sceneNavPanel.classList.add('open');
+    sceneNavMask.classList.add('show');
+}
+
+function closeSceneNav() {
+    sceneNavPanel.classList.remove('open');
+    sceneNavMask.classList.remove('show');
+}
+
+function renderSceneNav() {
+    const acts = state.script?.structure?.acts;
+    if (!acts || acts.length === 0) {
+        sceneNavList.innerHTML = '<div style="padding:20px;color:var(--sub);font-size:13px;text-align:center;">暂无场景</div>';
+        return;
+    }
+    let html = '';
+    acts.forEach((act, ai) => {
+        html += `<div class="scene-nav-act">第${act.actNumber || ai + 1}幕 · ${esc(act.title || '未命名')}</div>`;
+        (act.scenes || []).forEach((scene, si) => {
+            const loc = scene.location ? `📍 ${esc(scene.location)}` : '';
+            html += `
+                <div class="scene-nav-item" data-act="${ai}" data-scene="${si}" onclick="jumpToScene(${ai},${si})">
+                    <span class="nav-scene-num">S${scene.sceneNumber || si + 1}</span>
+                    <span class="nav-scene-info">
+                        <div class="nav-scene-title">${esc(scene.sceneTitle || '未命名场')}</div>
+                        ${loc ? `<div class="nav-scene-loc">${loc}</div>` : ''}
+                    </span>
+                </div>
+            `;
+        });
+    });
+    sceneNavList.innerHTML = html;
+}
+
+function jumpToScene(actIndex, sceneIndex) {
+    // 切换到结构面板
+    switchPanel('structure');
+    // 展开目标幕和场景
+    state.expandedActs.add(actIndex);
+    state.expandedScenes.add(`${actIndex}-${sceneIndex}`);
+    renderStructurePanel();
+    // 关闭导航面板
+    closeSceneNav();
+    // 滚动到目标场景
+    setTimeout(() => {
+        const sceneCard = document.querySelector(`.scene-card[data-scene-key="${actIndex}-${sceneIndex}"]`);
+        if (sceneCard) {
+            sceneCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            sceneCard.style.boxShadow = '0 0 0 3px var(--accent)';
+            setTimeout(() => { sceneCard.style.boxShadow = ''; }, 1500);
+        }
+    }, 150);
+}
+
+sceneNavToggle.addEventListener('click', openSceneNav);
+sceneNavClose.addEventListener('click', closeSceneNav);
+sceneNavMask.addEventListener('click', closeSceneNav);
+
+// 编辑器显示时展示导航按钮，隐藏时隐藏
+const origLoadScriptIntoEditor2 = loadScriptIntoEditor;
+loadScriptIntoEditor = function(data) {
+    origLoadScriptIntoEditor2(data);
+    sceneNavToggle.classList.remove('hidden');
+};
+const origHideAll2 = hideAll;
+hideAll = function() {
+    sceneNavToggle.classList.add('hidden');
+    origHideAll2();
+};
 
 // ════════════════ Server Config ════════════════
 const SERVER_URL_KEY = 'aiscript-server-url';
